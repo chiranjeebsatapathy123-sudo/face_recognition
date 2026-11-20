@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security & Intruder Alerts // NEXUS 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'alerts' %}
+  {% set nav_icon = '🚨' %}
+  {% set nav_title = 'SECURITY AUDIT // INTRUSION & ANOMALY LOGS' %}
+  {% set nav_subtitle = 'PERIMETER DEFENSE INCIDENT REPLAY & EVIDENCE VAULT' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="alerts-banner-card">
+      <div class="alert-icon-big">🚨</div>
+      <div>
+        <h2>AUTOMATED INTRUDER SURVEILLANCE ACTIVE</h2>
+        <p>Faces unrecognized after 18 continuous frames are automatically snapshotted, watermarked, and archived with biometric timestamps.</p>
+      </div>
+    </div>
+
+    <div class="alerts-grid">
+      {% for alert in alerts %}
+      <div class="cyber-panel alert-card">
+        <div class="alert-img-wrap">
+          <img src="{{ alert.snapshot_url }}" alt="Intruder Snapshot" class="alert-snapshot" style="cursor:pointer;" onclick='openForensicModal({user_name:"UNAUTHORIZED VISITOR", user_type:"Unregistered", punch_type:"SECURITY_ALERT", time:"{{ alert.time }}", date:"{{ alert.date }}", is_late:0, confidence:0.12, snapshot_url:"{{ alert.snapshot_url }}"})' title="Click to inspect Forensic Evidence">
+          <div class="alert-badge-overlay">FLAGGED</div>
+        </div>
+        <div class="alert-details">
+          <div class="alert-type">{{ alert.event_type }}</div>
+          <div class="alert-time">{{ alert.date }} // {{ alert.time }}</div>
+          <div class="alert-actions">
+            <a href="/enroll" class="cyber-button secondary small">Enroll This Person</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="cyber-panel no-records-card">
+        <div style="font-size: 2.5rem; margin-bottom: 12px;">🛡️</div>
+        <h3>No Security Breaches Logged</h3>
+        <p>All scanned faces matched authorized personnel or students.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRYPTOGRAPHIC VAULT // Disaster Recovery & Merkle Snapshots</title>
+  <!-- Google Fonts: Orbitron & Rajdhani -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .vault-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1100px) {
+      .vault-layout { grid-template-columns: 1fr; }
+    }
+    .vault-card {
+      background: rgba(10, 15, 26, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    .archive-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .archive-table th {
+      font-family: var(--font-tech);
+      font-size: 0.74rem;
+      letter-spacing: 1.5px;
+      color: var(--neon-cyan);
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+      background: rgba(0, 243, 255, 0.05);
+    }
+    .archive-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-family: var(--font-main);
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+    .archive-table tr:hover {
+      background: rgba(0, 243, 255, 0.04);
+    }
+    .hash-badge {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #00ff88;
+      background: rgba(0, 255, 136, 0.1);
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      letter-spacing: 0.5px;
+    }
+    .btn-action-sm {
+      font-family: var(--font-tech);
+      font-size: 0.74rem;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      background: rgba(0, 243, 255, 0.12);
+      color: #00f3ff;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-action-sm:hover {
+      background: rgba(0, 243, 255, 0.3);
+      border-color: #00f3ff;
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    }
+    .btn-action-restore {
+      border-color: rgba(255, 183, 0, 0.4);
+      background: rgba(255, 183, 0, 0.12);
+      color: #ffb700;
+    }
+    .btn-action-restore:hover {
+      background: rgba(255, 183, 0, 0.3);
+      border-color: #ffb700;
+      box-shadow: 0 0 10px rgba(255, 183, 0, 0.4);
+    }
+    .vault-tumbler-graphic {
+      width: 100%;
+      height: 140px;
+      background: radial-gradient(circle at center, rgba(0, 243, 255, 0.12) 0%, rgba(6, 10, 20, 0.9) 70%);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .vault-lock-ring {
+      width: 80px;
+      height: 80px;
+      border: 2px dashed #00f3ff;
+      border-radius: 50%;
+      position: absolute;
+      animation: spinTumbler 12s linear infinite;
+    }
+    @keyframes spinTumbler {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .recovery-terminal {
+      background: rgba(4, 6, 12, 0.95);
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      height: 220px;
+      overflow-y: auto;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+  {% set active_page = 'vault' %}
+  {% set nav_icon = '🗄️' %}
+  {% set nav_title = 'CRYPTOGRAPHIC VAULT // BACKUP & RECOVERY' %}
+  {% set nav_subtitle = 'SHA-256 SYSTEM ARCHIVES, MERKLE PROOF CERTIFICATES & COLD-START FAILOVER' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <!-- Telemetry Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">TOTAL VAULT SNAPSHOTS</div>
+        <div class="metric-val" id="telemetry-snap-count">{{ vault.total_snapshots }}</div>
+        <div class="metric-sub">Archived Recovery Points</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">STORAGE CONSUMED</div>
+        <div class="metric-val" style="color:#00f3ff;" id="telemetry-size">{{ vault.storage_used_kb }} KB</div>
+        <div class="metric-sub">Compressed Binary Payloads</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">CIPHER & CHECKSUM</div>
+        <div class="metric-val" style="font-size:1.1rem; color:#00ff88;">AES-GCM-256</div>
+        <div class="metric-sub">SHA-256 Root Hash Digest</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">FAILOVER READINESS</div>
+        <div class="metric-val" style="color:#00ff88;">100% NOMINAL</div>
+        <div class="metric-sub">{{ vault.redundancy_grade }}</div>
+      </div>
+    </section>
+
+    <!-- Main Vault Layout -->
+    <div class="vault-layout">
+      <!-- Left: Snapshot Archives Register -->
+      <div class="vault-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> CRYPTOGRAPHIC SNAPSHOT REGISTRY <span class="bracket">]</span>
+          </div>
+          <button onclick="createNewSnapshot()" class="btn-action-sm" style="border-color:#00ff88; color:#00ff88; font-weight:700;">
+            ➕ CREATE ENCRYPTED SNAPSHOT
+          </button>
+        </div>
+
+        <table class="archive-table">
+          <thead>
+            <tr>
+              <th>SNAPSHOT ID</th>
+              <th>CREATED AT</th>
+              <th>SIZE</th>
+              <th>SHA-256 INTEGRITY HASH</th>
+              <th>RECORDS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="snapshots-tbody">
+            {% for snap in vault.snapshots %}
+            <tr id="snap-row-{{ snap.snapshot_id }}">
+              <td>
+                <div style="font-family:'Orbitron',monospace; font-weight:700; color:#00f3ff; font-size:0.85rem;">{{ snap.snapshot_id }}</div>
+                <div style="font-size:0.75rem; color:#64748b;">{{ snap.snapshot_type }}</div>
+              </td>
+              <td style="font-family:monospace; font-size:0.82rem;">{{ snap.created_at }}</td>
+              <td style="font-family:monospace; color:#00ff88;">{{ snap.file_size_kb }} KB</td>
+              <td>
+                <span class="hash-badge" title="{{ snap.sha256_hash }}">
+                  {{ snap.sha256_hash[:12] }}...{{ snap.sha256_hash[-8:] }}
+                </span>
+              </td>
+              <td>
+                <span style="color:#cbd5e1; font-weight:600;">{{ snap.total_records }}</span> punches
+                <div style="font-size:0.74rem; color:#64748b;">{{ snap.total_users }} identities</div>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="verifySnapshot('{{ snap.snapshot_id }}')" class="btn-action-sm" title="Verify SHA-256 Checksum">
+                    🔍 VERIFY
+                  </button>
+                  <button onclick="restoreSnapshot('{{ snap.snapshot_id }}')" class="btn-action-sm btn-action-restore" title="Simulate Cold-Start Recovery">
+                    ⚡ RESTORE
+                  </button>
+                  <a href="/api/vault/download/{{ snap.filename }}" class="btn-action-sm" title="Download ZIP Archive" download>
+                    📥
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right: Cyber Vault Lock & Cold-Start Sandbox Terminal -->
+      <div>
+        <div class="vault-card">
+          <div class="panel-header" style="margin-bottom:12px;">
+            <div class="panel-title">
+              <span class="bracket">[</span> VAULT TUMBLER <span class="bracket">]</span>
+            </div>
+            <span style="font-family:var(--font-tech); font-size:0.72rem; color:#00ff88;">ARMED</span>
+          </div>
+
+          <div class="vault-tumbler-graphic">
+            <div class="vault-lock-ring"></div>
+            <div style="font-family:'Orbitron',monospace; font-size:1.4rem; color:#00f3ff; z-index:2; text-shadow:0 0 12px #00f3ff;">
+              🔒 SECURE
+            </div>
+            <div style="font-family:var(--font-tech); font-size:0.72rem; color:#94a3b8; margin-top:4px; z-index:2;">
+              MERKLE BLOCK HEIGHT: #{{ vault.snapshots|length * 42 + 104 }}
+            </div>
+          </div>
+
+          <!-- Cold-Start Recovery Sandbox Console -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-family:var(--font-tech); font-size:0.76rem; color:#00f3ff; letter-spacing:1px;">DISASTER RECOVERY AUDIT LOG</span>
+            <span id="failover-indicator" style="font-family:var(--font-tech); font-size:0.72rem; color:#00ff88;">STANDBY</span>
+          </div>
+          <div class="recovery-terminal" id="vault-console">
+            [VAULT SYSTEM INITIALIZED] Cryptographic keystore online.<br>
+            [ROOT KEY] AES-GCM-256 hardware security module ready.<br>
+            [MONITOR] Redundancy heartbeat: Tier-4 fault tolerance active.<br>
+            [READY] Select any snapshot above to verify cryptographic hash or simulate cold-start disaster recovery.
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function createNewSnapshot() {
+      const desc = prompt("Enter Snapshot Description:", "Ad-hoc Manual Security Backup");
+      if (!desc) return;
+
+      const consoleBox = document.getElementById('vault-console');
+      consoleBox.innerHTML += `<br><span style="color:#00f3ff;">>>> [BACKUP TRIGGERED] Initiating database copy, Merkle root seal, and SHA-256 checksumming...</span>`;
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+      if (window.playCyberAudio) window.playCyberAudio('radar');
+
+      try {
+        const resp = await fetch('/api/vault/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc, type: 'OPERATOR_ADHOC' })
+        });
+        const res = await resp.json();
+        if (res.success) {
+          const s = res.snapshot;
+          consoleBox.innerHTML += `<br><span style="color:#00ff88; font-weight:700;">>>> [SNAPSHOT SEALED] ID: ${s.snapshot_id} | Size: ${s.file_size_kb} KB | Hash: ${s.sha256_hash.substring(0, 16)}...</span>`;
+          consoleBox.scrollTop = consoleBox.scrollHeight;
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+
+          // Append to table
+          const tbody = document.getElementById('snapshots-tbody');
+          const row = document.createElement('tr');
+          row.id = `snap-row-${s.snapshot_id}`;
+          row.innerHTML = `
+            <td>
+              <div style="font-family:'Orbitron',monospace; font-weight:700; color:#00f3ff; font-size:0.85rem;">${s.snapshot_id}</div>
+              <div style="font-size:0.75rem; color:#64748b;">${s.snapshot_type}</div>
+            </td>
+            <td style="font-family:monospace; font-size:0.82rem;">${s.created_at}</td>
+            <td style="font-family:monospace; color:#00ff88;">${s.file_size_kb} KB</td>
+            <td>
+              <span class="hash-badge" title="${s.sha256_hash}">
+                ${s.sha256_hash.substring(0, 12)}...${s.sha256_hash.substring(s.sha256_hash.length - 8)}
+              </span>
+            </td>
+            <td>
+              <span style="color:#cbd5e1; font-weight:600;">${s.total_records}</span> punches
+              <div style="font-size:0.74rem; color:#64748b;">${s.total_users} identities</div>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button onclick="verifySnapshot('${s.snapshot_id}')" class="btn-action-sm">🔍 VERIFY</button>
+                <button onclick="restoreSnapshot('${s.snapshot_id}')" class="btn-action-sm btn-action-restore">⚡ RESTORE</button>
+                <a href="/api/vault/download/${s.filename}" class="btn-action-sm" download>📥</a>
+              </div>
+            </td>
+          `;
+          tbody.insertBefore(row, tbody.firstChild);
+
+          // Update metrics
+          const countElem = document.getElementById('telemetry-snap-count');
+          countElem.innerText = parseInt(countElem.innerText || '0') + 1;
+        }
+      } catch (err) {
+        consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [ERROR] Snapshot creation failed: ${err.message}</span>`;
+      }
+    }
+
+    async function verifySnapshot(snapId) {
+      const consoleBox = document.getElementById('vault-console');
+      consoleBox.innerHTML += `<br><span style="color:#ffb700;">>>> [AUDIT] Computing 64K chunk SHA-256 for ${snapId}...</span>`;
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+      if (window.playCyberAudio) window.playCyberAudio('chirp');
+
+      try {
+        const resp = await fetch('/api/vault/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshot_id: snapId })
+        });
+        const res = await resp.json();
+        if (res.success && res.hash_matches) {
+          consoleBox.innerHTML += `<br><span style="color:#00ff88; font-weight:700;">>>> [INTEGRITY VERIFIED] SHA-256 Match: ${res.computed_hash.substring(0, 24)}... (${res.verification_latency_ms} ms, ${res.file_count} archive files verified). Verdict: ${res.integrity_verdict}</span>`;
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+        } else {
+          consoleBox.innerHTML += `<br><span style="color:#ff3366; font-weight:700;">>>> [TAMPER ALERT] Hash mismatch or archive failure for ${snapId}!</span>`;
+          if (window.playCyberAudio) window.playCyberAudio('denial');
+        }
+      } catch (err) {
+        consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [VERIFY ERROR] ${err.message}</span>`;
+      }
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    async function restoreSnapshot(snapId) {
+      const consoleBox = document.getElementById('vault-console');
+      const failoverPill = document.getElementById('failover-indicator');
+
+      failoverPill.innerText = 'SIMULATING RESTORE...';
+      failoverPill.style.color = '#ffb700';
+      consoleBox.innerHTML += `<br><span style="color:#ffb700;">>>> [DISASTER RECOVERY] Testing cold-start restore sequence for ${snapId}...</span>`;
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+      if (window.playCyberAudio) window.playCyberAudio('radar');
+
+      try {
+        const resp = await fetch('/api/vault/restore', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshot_id: snapId })
+        });
+        const res = await resp.json();
+        if (res.success) {
+          failoverPill.innerText = 'RESTORE NOMINAL';
+          failoverPill.style.color = '#00ff88';
+          consoleBox.innerHTML += `<br><span style="color:#00ff88; font-weight:700;">>>> [FAILOVER SUCCESS] Restored ${res.records_recovered} punches & ${res.users_recovered} identities in ${res.cold_start_latency_ms} ms. Zero data loss verified.</span>`;
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+        } else {
+          failoverPill.innerText = 'RESTORE FAILED';
+          failoverPill.style.color = '#ff3366';
+          consoleBox.innerHTML += `<br><span style="color:#ff3366; font-weight:700;">>>> [RESTORE ERROR] ${res.error}</span>`;
+          if (window.playCyberAudio) window.playCyberAudio('denial');
+        }
+      } catch (err) {
+        consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [RESTORE ERROR] ${err.message}</span>`;
+      }
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>

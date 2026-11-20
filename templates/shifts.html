@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Shift & Schedule Policy Manager</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .shifts-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+
+    .shift-card {
+      background: rgba(10, 15, 26, 0.88);
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .shift-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .shift-name {
+      font-family: var(--font-tech);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1.5px;
+    }
+
+    .shift-times {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-family: var(--font-tech);
+    }
+
+    .time-slot {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-dim);
+      padding: 8px 14px;
+      border-radius: 3px;
+    }
+    .time-slot span { color: var(--neon-cyan); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'shifts' %}
+  {% set nav_icon = '🕒' %}
+  {% set nav_title = 'SHIFT POLICIES // ROSTER GOVERNANCE' %}
+  {% set nav_subtitle = 'WORKING HOURS, GRACE PERIODS & OVERTIME THRESHOLDS' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="shifts-grid">
+      <!-- Active Shifts List -->
+      <section class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> ACTIVE RECOGNIZED SHIFTS ({{ shifts|length }}) <span class="bracket">]</span></div>
+          <div class="panel-badge neon-green">DYNAMIC ENFORCEMENT</div>
+        </div>
+
+        {% for s in shifts %}
+        <div class="shift-card">
+          <div class="shift-header-line">
+            <div class="shift-name">{{ s.name }}</div>
+            <span class="badge {% if s.cohort == 'Student' %}student{% else %}office{% endif %}">{{ s.cohort }} Cohort</span>
+          </div>
+          <div class="shift-times">
+            <div class="time-slot">START: <span>{{ s.start_time }}</span></div>
+            <div class="time-slot">END: <span>{{ s.end_time }}</span></div>
+            <div class="time-slot">GRACE: <span>{{ s.grace_minutes }} MINS</span></div>
+          </div>
+          <div style="font-size:0.8rem; color:var(--text-muted); font-family:var(--font-tech);">
+            Late threshold cutoff: <span style="color:#ff3366; font-weight:700;">{{ s.start_time }} + {{ s.grace_minutes }}m</span>. Arrivals after this are flagged LATE ARRIVAL.
+          </div>
+        </div>
+        {% endfor %}
+      </section>
+
+      <!-- Create New Shift Form -->
+      <section class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> CONFIGURE NEW SHIFT POLICY <span class="bracket">]</span></div>
+          <div class="panel-badge">POLICY BUILDER</div>
+        </div>
+
+        <form onsubmit="handleCreateShift(event)" style="padding: 10px 0;">
+          <div class="form-group">
+            <label>SHIFT IDENTIFIER / NAME *</label>
+            <input type="text" id="shift-name" class="cyber-input" placeholder="e.g. AI Research Evening Shift" required>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:18px;">
+            <div class="form-group" style="margin:0;">
+              <label>START TIME (HH:MM) *</label>
+              <input type="time" id="shift-start" class="cyber-input" value="14:00" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>END TIME (HH:MM) *</label>
+              <input type="time" id="shift-end" class="cyber-input" value="22:00" required>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:18px;">
+            <div class="form-group" style="margin:0;">
+              <label>GRACE BUFFER (MINS) *</label>
+              <input type="number" id="shift-grace" class="cyber-input" value="15" min="0" max="60" required>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>TARGET COHORT *</label>
+              <select id="shift-cohort" class="cyber-select" style="width:100%; height:46px;">
+                <option value="Employee">🏢 Employee / Office Staff</option>
+                <option value="Student">🎓 Academic Students</option>
+                <option value="All">🌐 All Cohorts (Universal)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="cyber-button primary full-width">ACTIVATE SCHEDULE POLICY</button>
+          <div id="shift-status" class="status-msg"></div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS SCHEDULE ENGINE // DYNAMIC PUNCTUALITY COMPLIANCE</div>
+    <div>ISO 27001 WORKFORCE STANDARDS COMPLIANT</div>
+  </footer>
+
+  <script>
+    async function handleCreateShift(e) {
+      e.preventDefault();
+      const statusDiv = document.getElementById("shift-status");
+      statusDiv.textContent = "Committing shift policy to database...";
+      statusDiv.className = "status-msg info";
+
+      const payload = {
+        name: document.getElementById("shift-name").value,
+        start_time: document.getElementById("shift-start").value,
+        end_time: document.getElementById("shift-end").value,
+        grace_minutes: parseInt(document.getElementById("shift-grace").value),
+        cohort: document.getElementById("shift-cohort").value
+      };
+
+      try {
+        const res = await fetch("/api/shifts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusDiv.textContent = "✔ " + data.message;
+          statusDiv.className = "status-msg success";
+          setTimeout(() => location.reload(), 1200);
+        } else {
+          statusDiv.textContent = "✖ " + data.message;
+          statusDiv.className = "status-msg error";
+        }
+      } catch (err) {
+        statusDiv.textContent = "Error: " + err.message;
+        statusDiv.className = "status-msg error";
+      }
+    }
+  </script>
+</body>
+</html>

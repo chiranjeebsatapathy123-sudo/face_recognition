@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Forensic Reverse Biometric Re-ID</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .search-layout-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    .dropzone-box {
+      border: 2px dashed var(--border-cyan);
+      border-radius: 4px;
+      padding: 30px 20px;
+      text-align: center;
+      background: rgba(10, 15, 26, 0.7);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      margin-bottom: 16px;
+    }
+    .dropzone-box:hover {
+      border-color: #fff;
+      background: rgba(0, 243, 255, 0.08);
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+    }
+
+    .probe-preview-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #000;
+      border: 1px solid var(--border-dim);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .probe-preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .match-result-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-dim);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.25s ease;
+    }
+    .match-result-card:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+    .match-result-card.top-match {
+      border: 1.5px solid #00ff88;
+      background: rgba(0, 255, 136, 0.06);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.25);
+    }
+
+    .match-rank-badge {
+      font-family: var(--font-tech);
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #00ff88;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #00ff88;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 18px;
+    }
+
+    .match-name {
+      font-family: var(--font-tech);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    .match-conf-bar {
+      width: 180px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .match-conf-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-cyan), #00ff88);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'search' %}
+  {% set nav_icon = '🔍' %}
+  {% set nav_title = 'FORENSIC SEARCH // PROBE RE-IDENTIFICATION' %}
+  {% set nav_subtitle = 'FACE MATCHING QUERY ENGINE & EUCLIDEAN DISTANCE RANKING' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="search-layout-grid">
+      <!-- Left: Probe Submission Box -->
+      <section class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> SUBMIT PROBE ARTIFACT <span class="bracket">]</span></div>
+          <div class="panel-badge">EVIDENCE INPUT</div>
+        </div>
+
+        <div class="dropzone-box" onclick="document.getElementById('file-probe').click()">
+          <div style="font-size:2.2rem; margin-bottom:8px;">🔍</div>
+          <div style="font-family:var(--font-tech); font-size:0.88rem; color:#fff; letter-spacing:1px; margin-bottom:4px;">
+            CLICK TO SELECT OR DRAG IMAGE
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">
+            JPG, PNG, WebP up to 10MB
+          </div>
+          <input type="file" id="file-probe" accept="image/*" style="display:none;" onchange="handleProbeSelect(event)">
+        </div>
+
+        <div class="probe-preview-wrap">
+          <img id="probe-img-preview" src="" alt="Probe Face" style="display:none;">
+          <div id="probe-placeholder" style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:20px;">
+            No probe submitted yet.<br>Upload a photo or CCTV snapshot.
+          </div>
+        </div>
+
+        <button class="cyber-button primary full-width" id="btn-run-search" onclick="executeForensicSearch()" disabled>
+          ⚡ RUN REVERSE BIOMETRIC SEARCH
+        </button>
+        <div id="search-status" class="status-msg"></div>
+      </section>
+
+      <!-- Right: Ranked Match Results -->
+      <section class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> RANKED PROBABILITY MATCHES <span class="bracket">]</span></div>
+          <div class="panel-badge neon-green" id="matches-count-badge">READY FOR PROBE</div>
+        </div>
+
+        <div id="matches-container" style="padding:10px 0;">
+          <div class="no-records" id="no-search-msg">
+            Upload an image on the left to extract facial features and search against all registered personnel and student databases.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS FORENSIC IDENTIFICATION ENGINE // VECTOR SIMILARITY ANALYSIS</div>
+    <div>ALGORITHM: DEEP RESIDUAL PYTORCH CNN + COSINE DISTANCE PROJECTION</div>
+  </footer>
+
+  <script>
+    let probeBase64 = "";
+
+    function handleProbeSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          probeBase64 = evt.target.result;
+          const img = document.getElementById("probe-img-preview");
+          img.src = probeBase64;
+          img.style.display = "block";
+          document.getElementById("probe-placeholder").style.display = "none";
+          document.getElementById("btn-run-search").disabled = false;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function executeForensicSearch() {
+      if (!probeBase64) return;
+      const statusDiv = document.getElementById("search-status");
+      statusDiv.textContent = "Extracting facial embeddings & projecting vector cosine similarities...";
+      statusDiv.className = "status-msg info";
+
+      try {
+        const res = await fetch("/api/search_face", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: probeBase64 })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          statusDiv.textContent = "✖ " + data.message;
+          statusDiv.className = "status-msg error";
+          return;
+        }
+
+        statusDiv.textContent = `✔ Extracted ${data.faces_detected} face(s). Found ${data.matches.length} matching candidates.`;
+        statusDiv.className = "status-msg success";
+
+        document.getElementById("matches-count-badge").textContent = `${data.matches.length} CANDIDATES IDENTIFIED`;
+
+        const container = document.getElementById("matches-container");
+        container.innerHTML = "";
+
+        data.matches.forEach((m, idx) => {
+          const isTop = (idx === 0 && m.confidence >= 0.65);
+          const confPct = Math.round(m.confidence * 100);
+          const card = document.createElement("div");
+          card.className = `match-result-card ${isTop ? 'top-match' : ''}`;
+          card.innerHTML = `
+            <div style="display:flex; align-items:center;">
+              <div class="match-rank-badge">#${m.rank}</div>
+              <div>
+                <div class="match-name">${m.name.toUpperCase()}</div>
+                <div style="font-size:0.8rem; color:var(--neon-cyan); letter-spacing:1px; margin-top:2px;">
+                  ${m.user_type} // ${m.emp_id} // ${m.department}
+                </div>
+                <div style="font-size:0.75rem; color:#94a3b8; margin-top:3px;">
+                  Role: ${m.role_title} // Status Today: <strong style="color:#fff;">${m.status_today}</strong>
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-family:var(--font-tech); font-size:1.4rem; font-weight:800; color:${isTop ? '#00ff88' : 'var(--neon-cyan)'};">
+                ${confPct}%
+              </div>
+              <div style="font-family:var(--font-tech); font-size:0.68rem; color:var(--text-muted); letter-spacing:1px;">
+                CONFIDENCE SCORE
+              </div>
+              <div class="match-conf-bar">
+                <div class="match-conf-fill" style="width:${confPct}%;"></div>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        statusDiv.textContent = "Error: " + err.message;
+        statusDiv.className = "status-msg error";
+      }
+    }
+  </script>
+</body>
+</html>

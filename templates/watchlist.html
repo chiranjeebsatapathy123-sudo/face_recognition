@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Biometric Watchlist & VIP Enforcement Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .watchlist-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .summary-deck {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .card-deck {
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .card-deck.gold { border-color: rgba(255, 183, 0, 0.4); }
+    .card-deck.amber { border-color: rgba(255, 145, 0, 0.4); }
+    .card-deck.crimson { border-color: rgba(255, 51, 102, 0.4); }
+    .card-title {
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .card-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .badge-clearance {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-vip {
+      background: rgba(255, 183, 0, 0.15);
+      border: 1px solid #ffb700;
+      color: #ffb700;
+    }
+    .badge-monitored {
+      background: rgba(255, 145, 0, 0.15);
+      border: 1px solid #ff9100;
+      color: #ff9100;
+    }
+    .badge-banned {
+      background: rgba(255, 51, 102, 0.2);
+      border: 1px solid #ff3366;
+      color: #ff3366;
+    }
+    .badge-standard {
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+    }
+    .form-panel {
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .input-ctrl {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .input-ctrl:focus {
+      outline: none;
+      border-color: #00f3ff;
+      box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    }
+    .action-btn {
+      background: linear-gradient(135deg, #00f3ff, #0088ff);
+      color: #0a0e17;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+      transform: translateY(-2px);
+    }
+    .action-btn.danger {
+      background: linear-gradient(135deg, #ff3366, #b30030);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .data-table th, .data-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .data-table th {
+      background: rgba(0, 243, 255, 0.08);
+      color: #00f3ff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+    .data-table tr:hover td {
+      background: rgba(0, 243, 255, 0.04);
+    }
+    .tab-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+    }
+    .tab-btn.active {
+      border-color: #00f3ff;
+      color: #00f3ff;
+      background: rgba(0, 243, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'watchlist' %}
+  {% set nav_icon = '🛡️' %}
+  {% set nav_title = 'SECURITY WATCHLIST // VIP & THREAT GOVERNANCE' %}
+  {% set nav_subtitle = 'CLEARANCE TIERS, BLACKLIST INTERCEPTION & VIP ENTRANCE DISPATCH' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Summary Deck -->
+    <div class="summary-deck">
+      <div class="card-deck gold">
+        <div class="card-title">Executive VIP Fast-Track</div>
+        <div class="card-num" style="color: #ffb700;">{{ summary.vip_count or 2 }} PROFILES</div>
+      </div>
+      <div class="card-deck amber">
+        <div class="card-title">Audited / Monitored Targets</div>
+        <div class="card-num" style="color: #ff9100;">{{ summary.monitored_count or 3 }} PROFILES</div>
+      </div>
+      <div class="card-deck crimson">
+        <div class="card-title">Blacklisted / Banned Threats</div>
+        <div class="card-num" style="color: #ff3366;">{{ summary.banned_count or 1 }} THREATS</div>
+      </div>
+      <div class="card-deck">
+        <div class="card-title">Watchlist Incidents Logged</div>
+        <div class="card-num" style="color: #00f3ff;">{{ summary.total_incidents or 0 }} EVENTS</div>
+      </div>
+    </div>
+
+    <div class="watchlist-grid">
+      <!-- Clearance Modifier Form & Simulator -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="form-panel">
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff; margin-bottom: 2px;">
+            MODIFY SECURITY CLEARANCE
+          </h3>
+          <p style="font-size:0.8rem; color:#94a3b8;">Assign executive privileges or enforce perimeter bans:</p>
+
+          <div>
+            <label style="font-size: 0.75rem; color:#94a3b8; display:block; margin-bottom: 5px;">SELECT IDENTITY</label>
+            <select id="user-select" class="input-ctrl">
+              {% for u in users %}
+              <option value="{{ u.name }}" data-clearance="{{ u.security_clearance or 'STANDARD' }}" data-notes="{{ u.access_notes or '' }}">
+                {{ u.name }} ({{ u.user_type }} - {{ u.security_clearance or 'STANDARD' }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 0.75rem; color:#94a3b8; display:block; margin-bottom: 5px;">CLEARANCE LEVEL</label>
+            <select id="clearance-select" class="input-ctrl">
+              <option value="STANDARD">STANDARD (Normal Access)</option>
+              <option value="VIP">VIP (Executive Fast-Track + Priority Notification)</option>
+              <option value="MONITORED">MONITORED (Audit Every Entry Event)</option>
+              <option value="BANNED">BANNED (Immediate Intercept & Lockdown Alert)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 0.75rem; color:#94a3b8; display:block; margin-bottom: 5px;">ACCESS REASON / PROTOCOL NOTES</label>
+            <textarea id="notes-input" class="input-ctrl" rows="3" placeholder="e.g. Executive Priority Pass, or Security Revocation Ref #402"></textarea>
+          </div>
+
+          <button class="action-btn" onclick="saveClearanceChange()">
+            Update Clearance Level
+          </button>
+        </div>
+
+        <!-- Quick Breach Simulator -->
+        <div class="form-panel" style="border-color: rgba(255, 51, 102, 0.4);">
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.9rem; color:#ff3366; margin-bottom: 2px;">
+            ⚠ THREAT TESTING SIMULATOR
+          </h3>
+          <p style="font-size:0.8rem; color:#94a3b8;">Simulate walk-up by blacklisted entity to test auto-intercept:</p>
+          <button class="action-btn danger" onclick="simulateBannedWalkup()">
+            Simulate Marcus Vance (BANNED Walk-up)
+          </button>
+        </div>
+      </div>
+
+      <!-- Tables: Directory & Incident Log -->
+      <div style="background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(0, 243, 255, 0.25); border-radius: 8px; padding: 20px;">
+        <div class="tab-nav">
+          <button class="tab-btn active" id="tab-btn-roster" onclick="switchTab('roster')">Clearance Roster ({{ users|length }})</button>
+          <button class="tab-btn" id="tab-btn-incidents" onclick="switchTab('incidents')">Watchlist Incidents ({{ incidents|length }})</button>
+        </div>
+
+        <!-- Roster Tab -->
+        <div id="tab-roster">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Identity</th>
+                <th>Clearance</th>
+                <th>Emp/Stu ID</th>
+                <th>Department</th>
+                <th>Protocol Notes</th>
+                <th>Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td><strong>{{ u.name }}</strong></td>
+                <td>
+                  {% set clr = (u.security_clearance or 'STANDARD')|upper %}
+                  {% if clr == 'VIP' %}
+                    <span class="badge-clearance badge-vip">★ VIP</span>
+                  {% elif clr == 'MONITORED' %}
+                    <span class="badge-clearance badge-monitored">👁 MONITORED</span>
+                  {% elif clr == 'BANNED' %}
+                    <span class="badge-clearance badge-banned">⚠ BANNED</span>
+                  {% else %}
+                    <span class="badge-clearance badge-standard">STANDARD</span>
+                  {% endif %}
+                </td>
+                <td>{{ u.emp_id or 'N/A' }}</td>
+                <td>{{ u.department }}</td>
+                <td style="font-size: 0.8rem; color:#94a3b8;">{{ u.access_notes or '-' }}</td>
+                <td>
+                  <button style="background:transparent; border:1px solid #ffb700; color:#ffb700; border-radius:4px; font-size:0.7rem; padding:3px 6px; cursor:pointer;" onclick="quickSet('{{ u.name }}', 'VIP')">VIP</button>
+                  <button style="background:transparent; border:1px solid #ff9100; color:#ff9100; border-radius:4px; font-size:0.7rem; padding:3px 6px; cursor:pointer;" onclick="quickSet('{{ u.name }}', 'MONITORED')">Audit</button>
+                  <button style="background:transparent; border:1px solid #ff3366; color:#ff3366; border-radius:4px; font-size:0.7rem; padding:3px 6px; cursor:pointer;" onclick="quickSet('{{ u.name }}', 'BANNED')">Ban</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Incidents Tab -->
+        <div id="tab-incidents" style="display: none;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Target Subject</th>
+                <th>Clearance</th>
+                <th>Action Taken</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-tbody">
+              {% if incidents %}
+                {% for inc in incidents %}
+                <tr>
+                  <td>{{ inc.date }} {{ inc.time }}</td>
+                  <td><strong>{{ inc.user_name }}</strong></td>
+                  <td>
+                    {% if inc.clearance_level == 'BANNED' %}
+                      <span class="badge-clearance badge-banned">⚠ BANNED</span>
+                    {% elif inc.clearance_level == 'VIP' %}
+                      <span class="badge-clearance badge-vip">★ VIP</span>
+                    {% else %}
+                      <span class="badge-clearance badge-monitored">👁 MONITORED</span>
+                    {% endif %}
+                  </td>
+                  <td style="color:#00f3ff;">{{ inc.action_taken }}</td>
+                  <td style="font-size:0.8rem; color:#94a3b8;">{{ inc.notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" style="text-align:center; color:#94a3b8; padding:30px;">
+                    Zero watchlist incidents logged yet today. System fully secure.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const userSelect = document.getElementById('user-select');
+    const clearanceSelect = document.getElementById('clearance-select');
+    const notesInput = document.getElementById('notes-input');
+
+    userSelect.addEventListener('change', () => {
+      const opt = userSelect.selectedOptions[0];
+      clearanceSelect.value = opt.getAttribute('data-clearance') || 'STANDARD';
+      notesInput.value = opt.getAttribute('data-notes') || '';
+    });
+
+    async function saveClearanceChange() {
+      const user = userSelect.value;
+      const clr = clearanceSelect.value;
+      const notes = notesInput.value;
+
+      try {
+        const res = await fetch('/api/watchlist/update_clearance', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ user_name: user, clearance: clr, notes: notes })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          window.location.reload();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function quickSet(name, clr) {
+      const reason = prompt(`Enter security note for assigning ${clr} to ${name}:`, `${clr} policy applied by SecOps Admin.`);
+      if (reason === null) return;
+      try {
+        const res = await fetch('/api/watchlist/update_clearance', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ user_name: name, clearance: clr, notes: reason })
+        });
+        const data = await res.json();
+        alert(data.message);
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function simulateBannedWalkup() {
+      try {
+        const res = await fetch('/api/simulate_subject', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ subject: 'Marcus Vance' })
+        });
+        const data = await res.json();
+        alert('Walk-up active: Marcus Vance [BANNED]. Check live stream & alerts!');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function switchTab(t) {
+      if (t === 'roster') {
+        document.getElementById('tab-roster').style.display = 'block';
+        document.getElementById('tab-incidents').style.display = 'none';
+        document.getElementById('tab-btn-roster').classList.add('active');
+        document.getElementById('tab-btn-incidents').classList.remove('active');
+      } else {
+        document.getElementById('tab-roster').style.display = 'none';
+        document.getElementById('tab-incidents').style.display = 'block';
+        document.getElementById('tab-btn-roster').classList.remove('active');
+        document.getElementById('tab-btn-incidents').classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

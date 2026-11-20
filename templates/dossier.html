@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Personnel Biometric Intelligence Dossier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .dossier-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .profile-card {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .avatar-box {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 2px solid #00f3ff;
+      margin: 0 auto;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080c14;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    }
+    .avatar-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gauge-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .score-circle {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #00ff88;
+      margin: 8px 0;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+    }
+    .metric-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .metric-box {
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+    .m-label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .m-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .gallery-item {
+      height: 110px;
+      background: #000;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gallery-item:hover {
+      transform: scale(1.05);
+      border-color: #00f3ff;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .badge-vip {
+      background: rgba(255, 183, 0, 0.15);
+      border: 1px solid #ffb700;
+      color: #ffb700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-banned {
+      background: rgba(255, 51, 102, 0.2);
+      border: 1px solid #ff3366;
+      color: #ff3366;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-monitored {
+      background: rgba(255, 145, 0, 0.15);
+      border: 1px solid #ff9100;
+      color: #ff9100;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-standard {
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .dossier-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .dossier-table th, .dossier-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    .dossier-table th {
+      color: #00f3ff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      background: rgba(0, 243, 255, 0.05);
+    }
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .cyber-scanlines, .hud-background-grid, .nav-links, .cyber-header { display: none !important; }
+      .dossier-layout { display: block; }
+      .profile-card, .metric-box { border: 1px solid #ccc; color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'dossier' %}
+  {% set nav_icon = '👤' %}
+  {% set nav_title = 'BIOMETRIC INTELLIGENCE DOSSIER // PERSONNEL AUDIT' %}
+  {% set nav_subtitle = 'LONGITUDINAL ATTENDANCE TIMELINE, CONFIDENCE PROFILES & CCTV PROOF GALLERY' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Selector Bar -->
+    <div style="background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span style="font-family:'Orbitron',monospace; font-size: 0.85rem; color:#00f3ff;">SELECT SUBJECT:</span>
+        <select id="select-user" style="background:#080c14; border:1px solid #00f3ff; color:#fff; padding:6px 14px; border-radius:4px; font-family:'Rajdhani',sans-serif; font-size:1rem;" onchange="switchUser(this.value)">
+          {% for u in users %}
+          <option value="{{ u.name }}" {{ 'selected' if dossier and dossier.profile.name == u.name else '' }}>
+            {{ u.name }} ({{ u.emp_id or 'N/A' }} - {{ u.user_type }})
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button onclick="window.print()" style="background:rgba(0, 243, 255, 0.15); border:1px solid #00f3ff; color:#00f3ff; padding:8px 18px; border-radius:4px; font-family:'Orbitron',monospace; font-size:0.75rem; cursor:pointer;">
+        🖨️ PRINT OFFICIAL DOSSIER
+      </button>
+    </div>
+
+    {% if dossier %}
+    {% set p = dossier.profile %}
+    {% set s = dossier.stats %}
+    <div class="dossier-layout">
+      <!-- Profile Side Card -->
+      <div class="profile-card">
+        <div class="avatar-box">
+          {% if dossier.snapshots %}
+            <img src="{{ dossier.snapshots[0] }}" alt="{{ p.name }}">
+          {% else %}
+            <span style="font-size:3rem; color:#00f3ff;">◈</span>
+          {% endif %}
+        </div>
+
+        <div style="text-align: center;">
+          <h2 style="font-family:'Orbitron',monospace; font-size: 1.3rem; color:#fff; margin-bottom: 4px;">{{ p.name }}</h2>
+          <div style="color:#00f3ff; font-size: 0.9rem; font-weight: 600;">{{ p.role_title or 'Member' }}</div>
+          <div style="color:#94a3b8; font-size: 0.82rem; margin-top: 2px;">{{ p.department }}</div>
+        </div>
+
+        <div style="text-align: center;">
+          {% set clr = (p.security_clearance or 'STANDARD')|upper %}
+          {% if clr == 'VIP' %}
+            <span class="badge-vip">★ VIP EXECUTIVE</span>
+          {% elif clr == 'MONITORED' %}
+            <span class="badge-monitored">👁 MONITORED</span>
+          {% elif clr == 'BANNED' %}
+            <span class="badge-banned">⚠ ACCESS REVOKED</span>
+          {% else %}
+            <span class="badge-standard">STANDARD CLEARANCE</span>
+          {% endif %}
+        </div>
+
+        <!-- Reliability Gauge -->
+        <div class="gauge-card">
+          <div style="font-size:0.72rem; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Punctuality Reliability Rating</div>
+          <div class="score-circle">{{ s.punctuality_score }}%</div>
+          <div style="font-size:0.8rem; color:#00ff88; font-weight:700;">{{ s.attendance_grade }}</div>
+        </div>
+
+        <div style="font-size:0.82rem; color:#94a3b8; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span>ID Code:</span> <strong style="color:#fff;">{{ p.emp_id or 'N/A' }}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>Cohort:</span> <strong style="color:#fff;">{{ p.user_type }}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>Contact:</span> <strong style="color:#fff;">{{ p.email or 'N/A' }}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span>Enrolled:</span> <strong style="color:#fff;">{{ p.registered_at[:10] if p.registered_at else '2026' }}</strong>
+          </div>
+        </div>
+
+        {% if p.access_notes %}
+        <div style="background:rgba(0,0,0,0.3); border-left:3px solid #ffb700; padding:10px; border-radius:4px; font-size:0.8rem; color:#e2e8f0;">
+          <strong style="color:#ffb700;">PROTOCOL NOTES:</strong><br>
+          {{ p.access_notes }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Main Dossier Data Area -->
+      <div>
+        <!-- 4 Metric Cards -->
+        <div class="metric-grid-4">
+          <div class="metric-box">
+            <div class="m-label">Total Recorded Punches</div>
+            <div class="m-val">{{ s.total_punches }}</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Verified Check-Ins</div>
+            <div class="m-val" style="color:#00ff88;">{{ s.check_ins }}</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Verified Check-Outs</div>
+            <div class="m-val" style="color:#ff9100;">{{ s.check_outs }}</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Late Arrivals Flagged</div>
+            <div class="m-val" style="color: {{ '#ff3366' if s.late_punches > 0 else '#00ff88' }};">
+              {{ s.late_punches }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Biometric Facial Proof Gallery -->
+        <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(0, 243, 255, 0.25); border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.9rem; color:#00f3ff;">
+            BIOMETRIC HISTORICAL PROOF REEL (CCTV CAPTURES OVER TIME)
+          </h4>
+          {% if dossier.snapshots %}
+            <div class="gallery-grid">
+              {% for snap in dossier.snapshots %}
+              <div class="gallery-item" onclick="window.open('{{ snap }}', '_blank')">
+                <img src="{{ snap }}" alt="Proof">
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p style="font-size:0.85rem; color:#94a3b8; margin-top:10px;">
+              No historical punch snapshots stored yet for this subject.
+            </p>
+          {% endif %}
+        </div>
+
+        <!-- Punch Event History Table -->
+        <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(0, 243, 255, 0.25); border-radius: 8px; padding: 20px;">
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.9rem; color:#00f3ff; margin-bottom: 12px;">
+            RECENT BIOMETRIC PUNCH LOGS
+          </h4>
+          <table class="dossier-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Punch Type</th>
+                <th>Punctuality</th>
+                <th>Confidence</th>
+                <th>Snapshot</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if dossier.recent_punches %}
+                {% for p in dossier.recent_punches %}
+                <tr>
+                  <td>{{ p.date }}</td>
+                  <td><strong>{{ p.time }}</strong></td>
+                  <td style="color:#00f3ff;">{{ p.punch_type }}</td>
+                  <td>
+                    {% if p.is_late %}
+                      <span style="color:#ff3366; font-weight:700;">LATE</span>
+                    {% else %}
+                      <span style="color:#00ff88; font-weight:700;">ON TIME</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ (p.confidence * 100)|round(1) }}%</td>
+                  <td>
+                    {% if p.snapshot_url %}
+                      <a href="{{ p.snapshot_url }}" target="_blank" style="color:#00f3ff; text-decoration:none;">View Proof</a>
+                    {% else %}
+                      <span style="color:#64748b;">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">
+                    Zero punch events logged for this identity.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </main>
+
+  <script>
+    function switchUser(name) {
+      window.location.href = `/dossier?user=${encodeURIComponent(name)}`;
+    }
+  </script>
+</body>
+</html>

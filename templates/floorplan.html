@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Spatial Zone Occupancy & Architectural Floor Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .floorplan-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .blueprint-canvas-box {
+      background: #060a12;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+      min-height: 520px;
+    }
+    .blueprint-grid {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: 
+        linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+      background-size: 25px 25px;
+      pointer-events: none;
+    }
+    .zone-block {
+      position: absolute;
+      border: 2px solid #00f3ff;
+      border-radius: 6px;
+      background: rgba(13, 20, 36, 0.75);
+      backdrop-filter: blur(4px);
+      padding: 12px;
+      box-sizing: border-box;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .zone-block:hover, .zone-block.selected {
+      background: rgba(0, 243, 255, 0.18);
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.35);
+      transform: scale(1.01);
+    }
+    .zone-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .zone-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-family: 'Orbitron', monospace;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+    .density-circle {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 10px #00ff88;
+      animation: pulse-density 1.8s infinite;
+    }
+    @keyframes pulse-density {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: 0.4; }
+    }
+    .locate-pin {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: beacon-ping 1.2s infinite;
+    }
+    @keyframes beacon-ping {
+      0% { transform: translate(-50%, -50%) scale(0.6); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+    }
+    .sidebar-panel {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .evac-btn {
+      background: linear-gradient(135deg, #ff3366, #990022);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 18px rgba(255, 51, 102, 0.4);
+      transition: all 0.2s;
+    }
+    .evac-btn:hover {
+      box-shadow: 0 0 30px rgba(255, 51, 102, 0.7);
+      transform: translateY(-2px);
+    }
+    .occupant-pill {
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'floorplan' %}
+  {% set nav_icon = '🗺️' %}
+  {% set nav_title = 'SPATIAL FACILITY BLUEPRINT // ZONE OCCUPANCY RADAR' %}
+  {% set nav_subtitle = 'REAL-TIME ZONE CROWD DENSITY, SUBJECT LOCATOR & MUSTER ROLL CALL' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Floorplan & Controls Layout -->
+    <div class="floorplan-layout">
+      <!-- 2D Architectural Blueprint -->
+      <div class="blueprint-canvas-box" id="blueprint-area">
+        <div class="blueprint-grid"></div>
+
+        <!-- Render Zones -->
+        {% for z in occupancy.zones %}
+        <div class="zone-block" id="block-{{ z.id }}" 
+             style="left: {{ z.x }}%; top: {{ z.y }}%; width: {{ z.w }}%; height: {{ z.h }}%; border-color: {{ z.color }};"
+             onclick="selectZone('{{ z.id }}')">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="zone-title" style="color: {{ z.color }};">{{ z.name }}</span>
+              <div class="density-circle" style="background: {{ z.color }}; box-shadow: 0 0 10px {{ z.color }};"></div>
+            </div>
+            <span class="zone-badge" style="background: {{ z.color }}22; color: {{ z.color }}; border: 1px solid {{ z.color }};">
+              {{ z.type }}
+            </span>
+          </div>
+
+          <div>
+            <div style="font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between;">
+              <span>OCCUPANCY:</span>
+              <strong style="color: #fff;">{{ z.current_count }} / {{ z.capacity }}</strong>
+            </div>
+            <div style="background: rgba(0,0,0,0.5); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 4px;">
+              <div style="width: {{ z.occupancy_pct }}%; height: 100%; background: {{ z.color }};"></div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Controls & Muster Roll Call -->
+      <div class="sidebar-panel">
+        <div>
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff; margin-bottom: 4px;">
+            SPATIAL MUSTER TELEMETRY
+          </h3>
+          <p style="font-size: 0.8rem; color:#94a3b8; margin-bottom: 12px;">Live headcount synced with biometric punch records:</p>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="stat-row">
+              <span style="color:#94a3b8;">Registered Strength:</span>
+              <strong style="color:#fff;">{{ occupancy.summary.total_registered }} Personnel</strong>
+            </div>
+            <div class="stat-row">
+              <span style="color:#94a3b8;">Currently In Building:</span>
+              <strong style="color:#00ff88;">{{ occupancy.summary.total_inside }} Checked In</strong>
+            </div>
+            <div class="stat-row">
+              <span style="color:#94a3b8;">Total Zone Capacity:</span>
+              <strong style="color:#00f3ff;">{{ occupancy.summary.building_capacity }} Max</strong>
+            </div>
+            <div class="stat-row">
+              <span style="color:#94a3b8;">Evacuation Accounted:</span>
+              <strong style="color:#ffb700;">{{ occupancy.summary.accounted_in_evac }} Roll Call</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subject Locator -->
+        <div>
+          <label style="font-size: 0.75rem; color:#00f3ff; font-family:'Orbitron',monospace; display:block; margin-bottom: 6px;">
+            📍 LOCATE SUBJECT ON BLUEPRINT:
+          </label>
+          <select id="user-locator-select" style="width: 100%; background:#080c14; border:1px solid #00f3ff; color:#fff; padding:8px 12px; border-radius:4px; font-family:'Rajdhani',sans-serif; font-size: 0.95rem;" onchange="locateSubject(this.value)">
+            <option value="">-- Select Person to Ping Location --</option>
+            {% for p in occupancy.personnel %}
+            <option value="{{ p.name }}" data-zone="{{ p.zone_id }}" data-status="{{ p.status }}" data-seen="{{ p.last_seen }}">
+              {{ p.name }} ({{ p.department }} - {{ p.status }})
+            </option>
+            {% endfor %}
+          </select>
+          <div id="locator-info" style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;"></div>
+        </div>
+
+        <!-- Emergency Muster Drill Button -->
+        <button class="evac-btn" onclick="triggerMusterDrill()">
+          🚨 INITIATE MUSTER DRILL & EVACUATION ROLL CALL
+        </button>
+
+        <!-- Selected Zone Details -->
+        <div style="border-top: 1px solid rgba(0, 243, 255, 0.2); padding-top: 12px;">
+          <h4 id="zone-detail-title" style="font-family:'Orbitron',monospace; font-size: 0.85rem; color:#e2e8f0; margin-bottom: 8px;">
+            ZONE OCCUPANTS: (SELECT A ZONE)
+          </h4>
+          <div id="zone-occupants-list" style="max-height: 140px; overflow-y: auto;">
+            <p style="font-size:0.8rem; color:#64748b;">Click on any room in the floor plan to inspect personnel inside.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const zonesData = {{ occupancy.zones|tojson }};
+
+    function selectZone(zid) {
+      document.querySelectorAll('.zone-block').forEach(b => b.classList.remove('selected'));
+      const block = document.getElementById(`block-${zid}`);
+      if (block) block.classList.add('selected');
+
+      const zone = zonesData.find(z => z.id === zid);
+      if (!zone) return;
+
+      document.getElementById('zone-detail-title').textContent = `${zone.name.toUpperCase()} (${zone.current_count} PERSONNEL):`;
+      const listEl = document.getElementById('zone-occupants-list');
+
+      if (zone.occupants && zone.occupants.length > 0) {
+        listEl.innerHTML = zone.occupants.map(o => `
+          <div class="occupant-pill">
+            <span style="color:#00ff88;">●</span>
+            <strong>${o.name}</strong> (${o.role}) - In: ${o.check_in_time}
+          </div>
+        `).join('');
+      } else {
+        listEl.innerHTML = `<p style="font-size:0.8rem; color:#64748b;">Zone currently vacant. Zero verified occupants.</p>`;
+      }
+    }
+
+    function locateSubject(name) {
+      const sel = document.getElementById('user-locator-select');
+      const opt = sel.selectedOptions[0];
+      const zid = opt.getAttribute('data-zone');
+      const status = opt.getAttribute('data-status');
+      const seen = opt.getAttribute('data-seen');
+
+      if (!zid) return;
+      selectZone(zid);
+
+      const info = document.getElementById('locator-info');
+      info.innerHTML = `Subject <strong>${name}</strong>: Status: <span style="color:${status === 'INSIDE_FACILITY' ? '#00ff88' : '#ff9100'}">${status}</span> (Last Seen: ${seen})`;
+    }
+
+    async function triggerMusterDrill() {
+      try {
+        const res = await fetch('/api/floorplan/drill', { method: 'POST' });
+        const data = await res.json();
+        alert(`🚨 EVACUATION MUSTER DRILL ACTIVE!\n${data.data.accounted_in_evac} personnel verified in designated roll call muster stations.`);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

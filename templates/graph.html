@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Biometric Threat & Relation Graph Network</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .graph-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      padding: 20px 40px;
+      height: calc(100vh - 145px);
+      box-sizing: border-box;
+    }
+    .graph-canvas-container {
+      background: rgba(10, 15, 26, 0.95);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 243, 255, 0.05);
+    }
+    .graph-header {
+      padding: 12px 20px;
+      background: rgba(6, 10, 18, 0.9);
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .graph-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.82rem;
+      letter-spacing: 1.5px;
+      color: #00f3ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #network-canvas {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    #network-canvas:active {
+      cursor: grabbing;
+    }
+    .graph-legend-overlay {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(6, 10, 18, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      gap: 14px;
+      font-size: 0.72rem;
+      font-family: 'Orbitron', monospace;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .leg-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-btn {
+      background: rgba(0, 243, 255, 0.08);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(0, 243, 255, 0.2);
+      border-color: #00f3ff;
+      color: #fff;
+    }
+    .inspector-panel {
+      background: rgba(10, 15, 26, 0.95);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      overflow-y: auto;
+    }
+    .inspector-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      color: #00f3ff;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .node-hero {
+      text-align: center;
+      padding: 15px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    .node-icon-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin: 0 auto 10px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      border: 2px solid #00f3ff;
+      background: rgba(0, 243, 255, 0.1);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    }
+    .node-title-lg {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .node-sub-lg {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+      font-size: 0.82rem;
+    }
+    .stat-lbl { color: #94a3b8; }
+    .stat-val { color: #fff; font-family: 'Orbitron', monospace; font-size: 0.8rem; }
+    .threat-meter {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0 15px 0;
+    }
+    .threat-meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff88, #ffb700, #ff3366);
+      width: 25%;
+    }
+    .edges-list {
+      margin-top: 15px;
+    }
+    .edge-chip {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+    }
+    .action-btn-full {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 243, 255, 0.05));
+      border: 1px solid #00f3ff;
+      color: #00f3ff;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.2s;
+    }
+    .action-btn-full:hover {
+      background: rgba(0, 243, 255, 0.25);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Reusable Two-Tier Header -->
+  {% set active_page = 'graph' %}
+  {% set nav_icon = '🕸️' %}
+  {% set nav_title = 'NEXUS INTELLIGENCE // BIOMETRIC THREAT & RELATION GRAPH' %}
+  {% set nav_subtitle = 'FORCE-DIRECTED NETWORK OF TEMPORAL CO-PRESENCE, CLEARANCE HIERARCHIES & BREACHES' %}
+  {% include 'nav_header.html' %}
+
+  <main class="graph-layout">
+    <!-- Interactive Canvas Area -->
+    <div class="graph-canvas-container">
+      <div class="graph-header">
+        <div class="graph-title">
+          <span>◈ BIOMETRIC TOPOLOGY SIMULATOR</span>
+          <span style="font-size:0.7rem; color:#94a3b8; font-family:'Rajdhani',sans-serif;">(DRAG TO PAN/REPOSITION NODES)</span>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="setFilter('ALL')">All Nodes (<span id="nodes-count-disp">24</span>)</button>
+          <button class="filter-btn" onclick="setFilter('THREAT')" style="color:#ff88a3;">🚨 Threats & Banned</button>
+          <button class="filter-btn" onclick="setFilter('VIP')" style="color:#ffcc00;">⭐ VIP Clearance</button>
+          <button class="filter-btn" onclick="setFilter('DOORS')" style="color:#00f3ff;">🚪 Door Relays</button>
+        </div>
+      </div>
+
+      <canvas id="network-canvas"></canvas>
+
+      <!-- Legend -->
+      <div class="graph-legend-overlay">
+        <div class="legend-item"><span class="leg-dot" style="background:#ffb700; box-shadow:0 0 6px #ffb700;"></span> VIP</div>
+        <div class="legend-item"><span class="leg-dot" style="background:#ff0055; box-shadow:0 0 6px #ff0055;"></span> BANNED / BREACH</div>
+        <div class="legend-item"><span class="leg-dot" style="background:#00f3ff;"></span> EMPLOYEE</div>
+        <div class="legend-item"><span class="leg-dot" style="background:#b55fe6;"></span> STUDENT</div>
+        <div class="legend-item"><span class="leg-dot" style="background:#00ff88;"></span> SHIFT</div>
+        <div class="legend-item"><span class="leg-dot" style="background:#38bdf8; border:1px solid #fff;"></span> DOOR RELAY</div>
+      </div>
+    </div>
+
+    <!-- Right Inspector Panel -->
+    <div class="inspector-panel" id="inspector-panel">
+      <div class="inspector-header">
+        <span>◈ NODE TELEMETRY</span>
+        <span id="insp-badge" style="font-size:0.7rem; padding:2px 8px; border-radius:3px; background:rgba(0,243,255,0.15); color:#00f3ff;">SELECT NODE</span>
+      </div>
+
+      <div class="node-hero" id="insp-hero">
+        <div class="node-icon-avatar" id="insp-avatar">👤</div>
+        <div class="node-title-lg" id="insp-name">Marcus Vance</div>
+        <div class="node-sub-lg" id="insp-role">Threat Blacklist (BANNED)</div>
+      </div>
+
+      <div style="font-family:'Orbitron',monospace; font-size:0.75rem; color:#00f3ff; margin-bottom:4px;">SECURITY RISK RATING</div>
+      <div class="threat-meter">
+        <div class="threat-meter-fill" id="insp-meter" style="width: 85%; background: #ff0055;"></div>
+      </div>
+
+      <div class="stat-row"><span class="stat-lbl">Clearance Tier</span><span class="stat-val" id="insp-clearance" style="color:#ff0055;">BANNED</span></div>
+      <div class="stat-row"><span class="stat-lbl">Primary Cohort</span><span class="stat-val" id="insp-dept">Security Blacklist</span></div>
+      <div class="stat-row"><span class="stat-lbl">Node ID</span><span class="stat-val" id="insp-id">user_Marcus Vance</span></div>
+      <div class="stat-row"><span class="stat-lbl">Graph Degree</span><span class="stat-val" id="insp-degree">4 Links</span></div>
+
+      <div class="edges-list">
+        <div style="font-family:'Orbitron',monospace; font-size:0.75rem; color:#00f3ff; margin-bottom:8px;">TOPOLOGICAL EDGES</div>
+        <div id="insp-links-box">
+          <div class="edge-chip"><span>DENIED_ATTEMPT</span><span style="color:#ff3366;">GATE-A1</span></div>
+          <div class="edge-chip"><span>TAILGATING_BREACH</span><span style="color:#ff3366;">Zone-C Vault</span></div>
+        </div>
+      </div>
+
+      <button class="action-btn-full" id="insp-action-btn" onclick="openSelectedProfile()">
+        VIEW PERSONNEL DOSSIER ➔
+      </button>
+    </div>
+  </main>
+
+  <script>
+    // 2D Force-Directed Simulation Engine
+    const canvas = document.getElementById("network-canvas");
+    const ctx = canvas.getContext("2d");
+
+    let graphData = { nodes: [], links: [] };
+    let filteredNodes = [];
+    let filteredLinks = [];
+    let activeFilter = 'ALL';
+    let selectedNode = null;
+    let hoveredNode = null;
+    let draggedNode = null;
+
+    // Viewport transform
+    let offsetX = 0;
+    let offsetY = 0;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight - 50;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    async function loadGraphData() {
+      try {
+        const res = await fetch('/api/security_graph');
+        graphData = await res.json();
+        document.getElementById('nodes-count-disp').textContent = graphData.nodes.length;
+        
+        // Initialize node coordinates randomly around center
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        graphData.nodes.forEach((n, idx) => {
+          const angle = (idx / graphData.nodes.length) * Math.PI * 2;
+          const r = 120 + Math.random() * 180;
+          n.x = cx + Math.cos(angle) * r;
+          n.y = cy + Math.sin(angle) * r;
+          n.vx = 0;
+          n.vy = 0;
+        });
+
+        applyFilter();
+        if (graphData.nodes.length > 0) {
+          selectNode(graphData.nodes.find(n => n.clearance === 'BANNED') || graphData.nodes[0]);
+        }
+      } catch (e) {
+        console.error("Failed to load graph data:", e);
+      }
+    }
+
+    function setFilter(filter) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      applyFilter();
+    }
+
+    function applyFilter() {
+      if (activeFilter === 'ALL') {
+        filteredNodes = [...graphData.nodes];
+      } else if (activeFilter === 'THREAT') {
+        filteredNodes = graphData.nodes.filter(n => n.clearance === 'BANNED' || n.clearance === 'MONITORED');
+      } else if (activeFilter === 'VIP') {
+        filteredNodes = graphData.nodes.filter(n => n.clearance === 'VIP');
+      } else if (activeFilter === 'DOORS') {
+        filteredNodes = graphData.nodes.filter(n => n.group === 'door');
+      }
+
+      const activeIds = new Set(filteredNodes.map(n => n.id));
+      filteredLinks = graphData.links.filter(l => activeIds.has(l.source) && activeIds.has(l.target));
+    }
+
+    // Force Simulation step
+    function updatePhysics() {
+      const kRepel = 2400;
+      const kAttract = 0.04;
+      const damping = 0.88;
+      const cx = canvas.width / 2 + offsetX;
+      const cy = canvas.height / 2 + offsetY;
+
+      // Repulsion between nodes
+      for (let i = 0; i < filteredNodes.length; i++) {
+        const n1 = filteredNodes[i];
+        for (let j = i + 1; j < filteredNodes.length; j++) {
+          const n2 = filteredNodes[j];
+          let dx = n1.x - n2.x;
+          let dy = n1.y - n2.y;
+          let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (dist < 350) {
+            let f = kRepel / (dist * dist);
+            let fx = (dx / dist) * f;
+            let fy = (dy / dist) * f;
+            if (n1 !== draggedNode) { n1.vx += fx; n1.vy += fy; }
+            if (n2 !== draggedNode) { n2.vx -= fx; n2.vy -= fy; }
+          }
+        }
+
+        // Center gravity
+        let dcx = cx - n1.x;
+        let dcy = cy - n1.y;
+        if (n1 !== draggedNode) {
+          n1.vx += dcx * 0.002;
+          n1.vy += dcy * 0.002;
+        }
+      }
+
+      // Attraction along links
+      const nodeMap = new Map(filteredNodes.map(n => [n.id, n]));
+      filteredLinks.forEach(link => {
+        const s = nodeMap.get(link.source);
+        const t = nodeMap.get(link.target);
+        if (s && t) {
+          let dx = t.x - s.x;
+          let dy = t.y - s.y;
+          let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          let f = (dist - 100) * kAttract;
+          let fx = (dx / dist) * f;
+          let fy = (dy / dist) * f;
+          if (s !== draggedNode) { s.vx += fx; s.vy += fy; }
+          if (t !== draggedNode) { t.vx -= fx; t.vy -= fy; }
+        }
+      });
+
+      // Apply velocities
+      filteredNodes.forEach(n => {
+        if (n !== draggedNode) {
+          n.vx *= damping;
+          n.vy *= damping;
+          n.x += n.vx;
+          n.y += n.vy;
+        }
+      });
+    }
+
+    // Render loop
+    function render() {
+      updatePhysics();
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const nodeMap = new Map(filteredNodes.map(n => [n.id, n]));
+
+      // Draw Links
+      filteredLinks.forEach(link => {
+        const s = nodeMap.get(link.source);
+        const t = nodeMap.get(link.target);
+        if (s && t) {
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(t.x, t.y);
+          ctx.strokeStyle = link.color || "rgba(0, 243, 255, 0.25)";
+          ctx.lineWidth = link.width || 1;
+          if (link.dashed) ctx.setLineDash([4, 4]);
+          else ctx.setLineDash([]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+
+      // Draw Nodes
+      filteredNodes.forEach(node => {
+        const isSel = (selectedNode && selectedNode.id === node.id);
+        const isHov = (hoveredNode && hoveredNode.id === node.id);
+        const r = node.size || 18;
+
+        // Aura glow
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r + (isSel ? 8 : (isHov ? 5 : 2)), 0, Math.PI * 2);
+        ctx.fillStyle = isSel ? "rgba(255, 255, 255, 0.3)" : (node.color.replace(')', ', 0.15)').replace('rgb', 'rgba'));
+        ctx.fill();
+
+        // Core circle
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = "#0a0f1a";
+        ctx.fill();
+        ctx.lineWidth = isSel ? 3 : 2;
+        ctx.strokeStyle = isSel ? "#ffffff" : node.color;
+        ctx.stroke();
+
+        // Node label
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "600 11px Rajdhani, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(node.label, node.x, node.y + r + 13);
+      });
+
+      requestAnimationFrame(render);
+    }
+
+    // Interaction handling
+    function getNodeAt(x, y) {
+      for (let i = filteredNodes.length - 1; i >= 0; i--) {
+        const n = filteredNodes[i];
+        const dx = x - n.x;
+        const dy = y - n.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= (n.size || 18) + 4) {
+          return n;
+        }
+      }
+      return null;
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const hit = getNodeAt(mx, my);
+
+      if (hit) {
+        draggedNode = hit;
+        selectNode(hit);
+      } else {
+        isPanning = true;
+        panStartX = mx - offsetX;
+        panStartY = my - offsetY;
+      }
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (draggedNode) {
+        draggedNode.x = mx;
+        draggedNode.y = my;
+      } else if (isPanning) {
+        offsetX = mx - panStartX;
+        offsetY = my - panStartY;
+      } else {
+        hoveredNode = getNodeAt(mx, my);
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      draggedNode = null;
+      isPanning = false;
+    });
+
+    function selectNode(node) {
+      if (!node) return;
+      selectedNode = node;
+
+      document.getElementById("insp-id").textContent = node.id;
+      document.getElementById("insp-name").textContent = node.label;
+      document.getElementById("insp-role").textContent = node.sublabel || node.group.toUpperCase();
+      document.getElementById("insp-dept").textContent = node.department || node.zone || "Facility Node";
+      document.getElementById("insp-clearance").textContent = node.clearance || node.tier || "SYSTEM";
+      document.getElementById("insp-clearance").style.color = node.color;
+      document.getElementById("insp-badge").textContent = node.group.toUpperCase();
+
+      // Threat meter calculation
+      let riskPct = 15;
+      let riskColor = "#00ff88";
+      if (node.clearance === 'BANNED') {
+        riskPct = 95;
+        riskColor = "#ff0055";
+      } else if (node.clearance === 'MONITORED') {
+        riskPct = 60;
+        riskColor = "#f59e0b";
+      } else if (node.clearance === 'VIP') {
+        riskPct = 5;
+        riskColor = "#ffb700";
+      }
+      document.getElementById("insp-meter").style.width = `${riskPct}%`;
+      document.getElementById("insp-meter").style.background = riskColor;
+
+      // Find links
+      const linked = graphData.links.filter(l => l.source === node.id || l.target === node.id);
+      document.getElementById("insp-degree").textContent = `${linked.length} Links`;
+
+      const box = document.getElementById("insp-links-box");
+      box.innerHTML = "";
+      linked.slice(0, 6).forEach(l => {
+        const otherId = l.source === node.id ? l.target : l.source;
+        const otherNode = graphData.nodes.find(n => n.id === otherId);
+        const chip = document.createElement("div");
+        chip.className = "edge-chip";
+        chip.innerHTML = `<span>${l.type}</span><span style="color:#00f3ff;">${otherNode ? otherNode.label : otherId}</span>`;
+        box.appendChild(chip);
+      });
+
+      // Action button
+      const btn = document.getElementById("insp-action-btn");
+      if (node.group === 'user') {
+        btn.textContent = `INSPECT ${node.label.toUpperCase()} DOSSIER ➔`;
+        btn.style.display = "block";
+      } else if (node.group === 'door') {
+        btn.textContent = `PULSE ${node.label} RELAY ➔`;
+        btn.style.display = "block";
+      } else {
+        btn.style.display = "none";
+      }
+    }
+
+    function openSelectedProfile() {
+      if (!selectedNode) return;
+      if (selectedNode.group === 'user') {
+        window.location.href = `/dossier?user=${encodeURIComponent(selectedNode.label)}`;
+      } else if (selectedNode.group === 'door') {
+        window.location.href = `/access`;
+      }
+    }
+
+    loadGraphData();
+    render();
+  </script>
+</body>
+</html>

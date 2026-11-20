@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Forensic Biometric Face Comparison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .compare-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .probe-card {
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .probe-preview-box {
+      width: 100%;
+      height: 240px;
+      background: #080c14;
+      border: 2px dashed rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .probe-preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .file-input {
+      display: none;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .probe-btn {
+      flex: 1;
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.4);
+      color: #00f3ff;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .probe-btn:hover {
+      background: rgba(0, 243, 255, 0.25);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    }
+    .benchmark-bar {
+      background: rgba(13, 17, 23, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 8px;
+      padding: 15px 25px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+    .results-section {
+      margin-top: 25px;
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 25px;
+      display: none;
+    }
+    .verdict-banner {
+      padding: 18px;
+      border-radius: 6px;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .metric-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+    }
+    .metric-lbl {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .metric-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .forensic-details-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 25px;
+    }
+    .heatmap-preview {
+      width: 100%;
+      height: 260px;
+      background: #000;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .heatmap-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .geo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .geo-table td, .geo-table th {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .geo-table th {
+      color: #00f3ff;
+      text-align: left;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'compare' %}
+  {% set nav_icon = '🔬' %}
+  {% set nav_title = 'FORENSIC BIOMETRIC COMPARATOR // 1:1 FACE VERIFICATION' %}
+  {% set nav_subtitle = 'JET COLORMAP DIFFERENCE HEATMAP & 5-POINT LANDMARK MORPHOLOGY' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- 1-Click Benchmark Quick-Load Bar -->
+    <div class="benchmark-bar">
+      <div>
+        <strong style="color:#00f3ff; font-family:'Orbitron',monospace; font-size: 0.85rem;">⚡ BENCHMARK PRESET PAIRS:</strong>
+        <span style="color:#94a3b8; font-size: 0.85rem; margin-left: 10px;">Load instant simulated probe faces for verification testing:</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="probe-btn" onclick="loadBenchmarkPair('same')">
+          ✓ Same Identity (Chiru vs Chiru)
+        </button>
+        <button class="probe-btn" style="border-color: #ff3366; color:#ff3366;" onclick="loadBenchmarkPair('diff')">
+          ✗ Cross-Identity (Chiru vs Marcus Vance)
+        </button>
+      </div>
+    </div>
+
+    <!-- Dual Probe Inputs -->
+    <div class="compare-container">
+      <!-- Probe A -->
+      <div class="probe-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff;">
+            PROBE IMAGE A [REFERENCE]
+          </h3>
+          <span id="label-probe-a" style="font-size:0.75rem; color:#94a3b8;">NO IMAGE LOADED</span>
+        </div>
+
+        <div class="probe-preview-box" id="box-probe-a">
+          <span style="color:#64748b; font-size:0.85rem;">Upload or Drop Image A</span>
+        </div>
+
+        <input type="file" id="file-probe-a" class="file-input" accept="image/*" onchange="handleFileSelected(event, 'a')">
+        <div class="btn-row">
+          <button class="probe-btn" onclick="document.getElementById('file-probe-a').click()">
+            📁 Upload Image A
+          </button>
+        </div>
+      </div>
+
+      <!-- Probe B -->
+      <div class="probe-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff;">
+            PROBE IMAGE B [CANDIDATE]
+          </h3>
+          <span id="label-probe-b" style="font-size:0.75rem; color:#94a3b8;">NO IMAGE LOADED</span>
+        </div>
+
+        <div class="probe-preview-box" id="box-probe-b">
+          <span style="color:#64748b; font-size:0.85rem;">Upload or Drop Image B</span>
+        </div>
+
+        <input type="file" id="file-probe-b" class="file-input" accept="image/*" onchange="handleFileSelected(event, 'b')">
+        <div class="btn-row">
+          <button class="probe-btn" onclick="document.getElementById('file-probe-b').click()">
+            📁 Upload Image B
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Run Comparison Trigger Button -->
+    <div style="text-align: center; margin-top: 25px;">
+      <button id="btn-run-compare" style="
+        background: linear-gradient(135deg, #00f3ff, #00ff88);
+        color: #0a0e17;
+        border: none;
+        padding: 16px 45px;
+        border-radius: 8px;
+        font-family: 'Orbitron', monospace;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+        letter-spacing: 2px;
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+        transition: all 0.2s;
+      " onclick="runComparison()">
+        🔬 EXECUTE FORENSIC BIOMETRIC COMPARISON
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section" id="results-panel">
+      <!-- Verdict Banner -->
+      <div class="verdict-banner" id="verdict-banner">
+        VERDICT: COMPUTING...
+      </div>
+
+      <!-- High-Level Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-lbl">Biometric Match Confidence</div>
+          <div class="metric-val" id="res-confidence">0.0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Cosine Similarity (Sc)</div>
+          <div class="metric-val" id="res-cosine">0.0000</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Euclidean Embedding Dist</div>
+          <div class="metric-val" id="res-euclid">0.0000</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-lbl">Geometric Aspect Delta</div>
+          <div class="metric-val" id="res-delta">0.0%</div>
+        </div>
+      </div>
+
+      <!-- Forensic Heatmap & Landmark Details -->
+      <div class="forensic-details-grid">
+        <div>
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.85rem; color:#00f3ff; margin-bottom: 8px;">
+            STRUCTURAL VARIANCE HEATMAP
+          </h4>
+          <div class="heatmap-preview" id="heatmap-container">
+            <span style="color:#64748b; font-size:0.8rem;">Heatmap rendering...</span>
+          </div>
+          <div style="font-size:0.75rem; color:#94a3b8; margin-top: 6px;">
+            JET colormap: Red/Yellow indicates biometric structural deviation; Blue/Green denotes congruent facial topology.
+          </div>
+        </div>
+
+        <div>
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.85rem; color:#00f3ff; margin-bottom: 8px;">
+            BIOMETRIC LANDMARK GEOMETRY ANALYSIS
+          </h4>
+          <table class="geo-table">
+            <thead>
+              <tr>
+                <th>Biometric Metric</th>
+                <th>Probe A (Ref)</th>
+                <th>Probe B (Candidate)</th>
+                <th>Congruency Status</th>
+              </tr>
+            </thead>
+            <tbody id="geo-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+
+          <div style="margin-top: 20px; padding: 14px; background: rgba(0,0,0,0.3); border-left: 3px solid #00f3ff; border-radius: 4px;">
+            <strong style="color:#00f3ff; font-family:'Orbitron',monospace; font-size:0.8rem;">EXECUTIVE FORENSIC SUMMARY:</strong>
+            <p id="res-notes" style="font-size:0.85rem; color:#e2e8f0; margin-top: 4px;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let probeA_b64 = null;
+    let probeB_b64 = null;
+
+    function handleFileSelected(e, target) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const b64 = evt.target.result;
+        if (target === 'a') {
+          probeA_b64 = b64;
+          document.getElementById('box-probe-a').innerHTML = `<img src="${b64}">`;
+          document.getElementById('label-probe-a').textContent = file.name;
+        } else {
+          probeB_b64 = b64;
+          document.getElementById('box-probe-b').innerHTML = `<img src="${b64}">`;
+          document.getElementById('label-probe-b').textContent = file.name;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function loadBenchmarkPair(type) {
+      try {
+        const res = await fetch(`/api/compare_sample_pair?type=${type}`);
+        const data = await res.json();
+        if (data.success) {
+          probeA_b64 = data.image_a;
+          probeB_b64 = data.image_b;
+
+          document.getElementById('box-probe-a').innerHTML = `<img src="${data.image_a}">`;
+          document.getElementById('label-probe-a').textContent = data.subject_a;
+
+          document.getElementById('box-probe-b').innerHTML = `<img src="${data.image_b}">`;
+          document.getElementById('label-probe-b').textContent = data.subject_b;
+
+          // Automatically trigger comparison
+          runComparison();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function runComparison() {
+      if (!probeA_b64 || !probeB_b64) {
+        alert("Please provide both Probe Image A and Probe Image B before executing comparison.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-run-compare');
+      btn.textContent = "ANALYZING BIOMETRIC EMBEDDINGS...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/compare_faces', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ image_a: probeA_b64, image_b: probeB_b64 })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          alert("Comparison failed: " + (data.message || "Unknown error"));
+          return;
+        }
+
+        // Display results
+        document.getElementById('results-panel').style.display = 'block';
+
+        const banner = document.getElementById('verdict-banner');
+        banner.textContent = data.verdict;
+        banner.style.background = data.verdict_color + '22';
+        banner.style.color = data.verdict_color;
+        banner.style.border = `2px solid ${data.verdict_color}`;
+
+        document.getElementById('res-confidence').textContent = data.confidence_score + '%';
+        document.getElementById('res-cosine').textContent = data.cosine_similarity;
+        document.getElementById('res-euclid').textContent = data.euclidean_distance;
+        document.getElementById('res-delta').textContent = data.geometry.aspect_delta_pct + '%';
+        document.getElementById('res-notes').textContent = data.notes;
+
+        // Structural Heatmap
+        if (data.heatmap_b64) {
+          document.getElementById('heatmap-container').innerHTML = `<img src="${data.heatmap_b64}">`;
+        }
+
+        // Geometry Table
+        const g = data.geometry;
+        const geoRows = `
+          <tr>
+            <td>Interpupillary Distance (IPD)</td>
+            <td>${g.ipd_a} px</td>
+            <td>${g.ipd_b} px</td>
+            <td style="color:${Math.abs(g.ipd_a - g.ipd_b) < 15 ? '#00ff88' : '#ffb700'};">
+              ${Math.abs(g.ipd_a - g.ipd_b) < 15 ? '✓ Coherent IPD' : 'Δ Scaled IPD'}
+            </td>
+          </tr>
+          <tr>
+            <td>Facial Aspect Ratio (IPD / Nose-to-Mouth)</td>
+            <td>${g.aspect_ratio_a}</td>
+            <td>${g.aspect_ratio_b}</td>
+            <td style="color:${g.aspect_delta_pct < 15 ? '#00ff88' : '#ff3366'};">
+              ${g.aspect_delta_pct < 15 ? '✓ Geometric Alignment' : '✗ Structural Mismatch'}
+            </td>
+          </tr>
+          <tr>
+            <td>Bilateral Symmetry Index</td>
+            <td>${g.symmetry_a_pct}%</td>
+            <td>${g.symmetry_b_pct}%</td>
+            <td style="color:#00f3ff;">Calibrated</td>
+          </tr>
+        `;
+        document.getElementById('geo-tbody').innerHTML = geoRows;
+
+        // Smooth scroll to results
+        document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        alert("Comparison execution error: " + err);
+      } finally {
+        btn.textContent = "🔬 EXECUTE FORENSIC BIOMETRIC COMPARISON";
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

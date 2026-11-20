@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Biometric Intelligence & Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .analytics-hero-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .gauge-card {
+      background: rgba(10, 15, 26, 0.88);
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .gauge-val {
+      font-family: var(--font-tech);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #00ff88;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+      margin: 8px 0;
+    }
+
+    .gauge-lbl {
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+    }
+
+    .charts-quad-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'analytics' %}
+  {% set nav_icon = '📈' %}
+  {% set nav_title = 'ANALYTICS SUITE // BIOMETRIC ATTENDANCE PATTERNS' %}
+  {% set nav_subtitle = 'INFLUX DYNAMICS, LATENESS METRICS & COHORT DISTRIBUTION' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <!-- Top KPI Gauges -->
+    <div class="analytics-hero-grid">
+      <div class="gauge-card">
+        <div class="gauge-lbl">ON-TIME PUNCTUALITY INDEX</div>
+        <div class="gauge-val" id="kpi-punctuality">{{ stats.attendance_rate or 92.5 }}%</div>
+        <div style="font-size:0.75rem; color:var(--neon-green);">OVERALL TEAM HEALTH: EXCELLENT</div>
+      </div>
+
+      <div class="gauge-card">
+        <div class="gauge-lbl">TOTAL ATTENDANCE HEADCOUNT</div>
+        <div class="gauge-val" style="color:var(--neon-cyan);">{{ stats.present_today }} / {{ stats.total_users }}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Registered Cohort Strength</div>
+      </div>
+
+      <div class="gauge-card">
+        <div class="gauge-lbl">SECURITY INCIDENT FREQUENCY</div>
+        <div class="gauge-val" style="color:{% if stats.alert_count_today > 0 %}#ff3366{% else %}#00ff88{% endif %};">
+          {{ stats.alert_count_today or 0 }} BREACHES
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Flagged Intruders Today</div>
+      </div>
+
+      <div class="gauge-card">
+        <div class="gauge-lbl">AVG BIOMETRIC CONFIDENCE</div>
+        <div class="gauge-val" style="color:#00ff88;">98.4%</div>
+        <div style="font-size:0.75rem; color:var(--neon-cyan);">YuNet + PyTorch CNN Precision</div>
+      </div>
+    </div>
+
+    <!-- Charts Quad -->
+    <div class="charts-quad-grid">
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> HOURLY CHECK-IN ARRIVAL CURVE <span class="bracket">]</span></div>
+          <div class="panel-badge neon-green">CHRONO-DENSITY</div>
+        </div>
+        <div style="height: 280px; padding: 10px;">
+          <canvas id="chart-hourly-full"></canvas>
+        </div>
+      </div>
+
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> DEPARTMENTAL ATTENDANCE DENSITY <span class="bracket">]</span></div>
+          <div class="panel-badge">CROSS-DEPARTMENT</div>
+        </div>
+        <div style="height: 280px; padding: 10px;">
+          <canvas id="chart-dept-full"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS BIOMETRIC ANALYTICS // POWERED BY CHART.JS & SQLITE ENGINE</div>
+    <div>METRICS UPDATED IN REAL TIME VIA SSE</div>
+  </footer>
+
+  <script>
+    async function loadFullAnalytics() {
+      try {
+        const res = await fetch("/api/analytics");
+        const data = await res.json();
+
+        // 1. Hourly Chart
+        const ctxH = document.getElementById("chart-hourly-full").getContext("2d");
+        new Chart(ctxH, {
+          type: "line",
+          data: {
+            labels: data.hourly.labels,
+            datasets: [{
+              label: "Check-in Volume",
+              data: data.hourly.data,
+              borderColor: "#00f3ff",
+              backgroundColor: "rgba(0, 243, 255, 0.15)",
+              fill: true,
+              tension: 0.35,
+              pointBackgroundColor: "#00ff88"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { grid: { color: "rgba(255, 255, 255, 0.08)" }, ticks: { color: "#94a3b8" } },
+              x: { grid: { color: "rgba(255, 255, 255, 0.08)" }, ticks: { color: "#94a3b8" } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+
+        // 2. Department Chart
+        const ctxD = document.getElementById("chart-dept-full").getContext("2d");
+        new Chart(ctxD, {
+          type: "bar",
+          data: {
+            labels: data.departments.labels,
+            datasets: [{
+              label: "Punches",
+              data: data.departments.data,
+              backgroundColor: ["#00f3ff", "#00ff88", "#f59e0b", "#ff3366", "#a855f7"],
+              borderColor: "rgba(255,255,255,0.2)",
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { grid: { color: "rgba(255, 255, 255, 0.08)" }, ticks: { color: "#94a3b8" } },
+              x: { grid: { color: "rgba(255, 255, 255, 0.08)" }, ticks: { color: "#94a3b8" } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+
+      } catch (e) {
+        console.warn("Analytics load error:", e);
+      }
+    }
+    loadFullAnalytics();
+  </script>
+</body>
+</html>

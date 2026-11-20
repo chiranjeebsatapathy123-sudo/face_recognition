@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // 2-Factor Biometric + Badge Gate</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .qr-checkpoint-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      margin-top: 14px;
+    }
+
+    .two-factor-card {
+      background: rgba(10, 15, 26, 0.9);
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
+    }
+
+    .factor-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-dim);
+      border-radius: 3px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .factor-title {
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .factor-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .status-banner-2fa {
+      padding: 18px;
+      border-radius: 4px;
+      text-align: center;
+      font-family: var(--font-tech);
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .status-banner-2fa.idle {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed var(--border-cyan);
+      color: var(--neon-cyan);
+    }
+    .status-banner-2fa.success {
+      background: rgba(0, 255, 136, 0.15);
+      border: 2px solid #00ff88;
+      color: #00ff88;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+    }
+    .status-banner-2fa.fraud {
+      background: rgba(255, 51, 102, 0.15);
+      border: 2px solid #ff3366;
+      color: #ff3366;
+      box-shadow: 0 0 25px rgba(255, 51, 102, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'qrscan' %}
+  {% set nav_icon = '🪪' %}
+  {% set nav_title = '2FA QR SCANNER // MULTI-FACTOR AUTHENTICATION' %}
+  {% set nav_subtitle = 'PHYSICAL BADGE QR DECRYPTION + REAL-TIME FACIAL VERIFICATION' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="qr-checkpoint-grid">
+      <!-- Live Video Feed with Dual Detection HUD -->
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> DUAL-AUTHENTICATION SENSOR FEED <span class="bracket">]</span></div>
+          <div class="panel-badge neon-green">AI FACE + QR SENSOR ACTIVE</div>
+        </div>
+        <div class="stream-viewport" style="min-height: 420px; display:flex; align-items:center; justify-content:center; background:#000;">
+          <img src="/video_feed" alt="Sensor Feed" style="width:100%; height:100%; object-fit:contain;">
+        </div>
+      </div>
+
+      <!-- 2-Factor Security Card -->
+      <div class="two-factor-card">
+        <div>
+          <div class="panel-header" style="margin-bottom: 16px;">
+            <div class="panel-title"><span class="bracket">[</span> 2FA VERIFICATION MATRIX <span class="bracket">]</span></div>
+            <div class="panel-badge">MAX SECURITY PROTOCOL</div>
+          </div>
+
+          <div class="status-banner-2fa idle" id="banner-2fa">
+            HOLD SMART BADGE UP TO CAMERA
+          </div>
+
+          <!-- Factor 1: Biometrics -->
+          <div class="factor-box">
+            <div class="factor-title">
+              <span>FACTOR 01: FACIAL BIOMETRIC VECTOR</span>
+              <span style="color:#00ff88;">YUNET + PYTORCH CNN</span>
+            </div>
+            <div class="factor-val" id="factor-face-val">DETECTING SUBJECT...</div>
+          </div>
+
+          <!-- Factor 2: Smart Badge Credential -->
+          <div class="factor-box">
+            <div class="factor-title">
+              <span>FACTOR 02: 2D SMART BADGE QR TOKEN</span>
+              <span style="color:var(--neon-cyan);">OPENCV QR PARSER</span>
+            </div>
+            <div class="factor-val" id="factor-badge-val">SCANNING QR TOKEN...</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-family:var(--font-tech); font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+            HOW IT WORKS: Hold your Smart Badge (from <a href="/idcard" style="color:var(--neon-cyan);">ID Badges</a>) in front of the lens. The AI cross-checks that the person presenting the card is genuine bearer to prevent card swapping or stolen badge usage.
+          </div>
+          <button class="cyber-button primary full-width" onclick="window.location.href='/idcard'">🪪 Generate / View Smart Badges</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS 2FA ACCESS CONTROL // DUAL-FACTOR ANTI-FRAUD ENGINE</div>
+    <div>ACTIVE PROTOCOLS: YUNET BIOMETRIC + ISO/IEC 18004 QR ENCRYPTION</div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

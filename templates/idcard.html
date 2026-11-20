@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biometric ID Badges // NEXUS 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .badge-studio-container {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      margin-top: 24px;
+    }
+    .badge-controls {
+      flex: 1;
+      max-width: 380px;
+    }
+    .badge-preview-wrap {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background: radial-gradient(circle at center, #101726 0%, #060913 90%);
+      border: 1px dashed var(--border-cyan);
+      border-radius: 4px;
+    }
+
+    /* Standard Vertical CR80 Smart Badge (3.375" x 2.125") */
+    .smart-id-card {
+      width: 320px;
+      height: 500px;
+      background: linear-gradient(145deg, #0d1527 0%, #060913 100%);
+      border: 2px solid var(--neon-cyan);
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.35), inset 0 0 15px rgba(0, 243, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .smart-id-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(0, 243, 255, 0.03) 0px,
+        rgba(0, 243, 255, 0.03) 2px,
+        transparent 2px,
+        transparent 10px
+      );
+      pointer-events: none;
+    }
+
+    .card-lanyard-slot {
+      width: 48px;
+      height: 6px;
+      background: #000;
+      border: 1px solid var(--border-dim);
+      border-radius: 3px;
+      margin: 0 auto 14px auto;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.25);
+      padding-bottom: 10px;
+    }
+    .card-org {
+      font-family: var(--font-tech);
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      color: var(--neon-cyan);
+      font-weight: 800;
+    }
+    .card-chip {
+      width: 28px;
+      height: 22px;
+      background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+      border-radius: 4px;
+      border: 1px solid #fff;
+    }
+
+    .card-photo-area {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 12px auto;
+      border-radius: 50%;
+      border: 2px solid var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 243, 255, 0.1);
+      font-size: 48px;
+      overflow: hidden;
+    }
+
+    .card-name {
+      font-family: var(--font-tech);
+      font-size: 1.15rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 1.5px;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+      margin-bottom: 4px;
+    }
+
+    .card-role-title {
+      font-size: 0.85rem;
+      color: var(--neon-green);
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .card-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(10, 15, 26, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.15);
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 0.8rem;
+    }
+    .card-meta-label {
+      font-family: var(--font-tech);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .card-meta-val {
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+
+    .card-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 243, 255, 0.2);
+    }
+    .card-qr-img {
+      width: 58px;
+      height: 58px;
+      border: 1px solid var(--neon-cyan);
+      border-radius: 4px;
+      background: #fff;
+      padding: 2px;
+    }
+    .card-barcode {
+      font-family: 'Libre Barcode 39 Text', monospace;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+      }
+      .cyber-scanlines, .hud-background-grid, .no-print {
+        display: none !important;
+      }
+      .badge-preview-wrap {
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+      }
+      .smart-id-card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        color: #000 !important;
+        background: #fff !important;
+      }
+      .smart-id-card::before { display: none; }
+      .card-name, .card-role-title, .card-org, .card-meta-val, .card-barcode {
+        color: #000 !important;
+        text-shadow: none !important;
+      }
+      .card-meta-grid {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <div class="no-print">
+    {% set active_page = 'idcard' %}
+    {% set nav_icon = '🪪' %}
+    {% set nav_title = 'HOLOGRAPHIC ID BADGES // 3D PASS GENERATOR' %}
+    {% set nav_subtitle = 'SECURITY CREDENTIAL PRODUCTION & CRYPTOGRAPHIC QR ISSUANCE' %}
+    {% include 'nav_header.html' %}
+  </div>
+
+  <main class="main-container">
+    <div class="badge-studio-container">
+      <!-- Controls -->
+      <div class="cyber-panel badge-controls no-print">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> SELECT IDENTITY <span class="bracket">]</span></div>
+        </div>
+        <div style="padding: 20px;">
+          <div class="form-group">
+            <label>CHOOSE PROFILE:</label>
+            <select class="cyber-select" style="width: 100%;" onchange="location.href='/idcard?user=' + encodeURIComponent(this.value)">
+              {% for u in users %}
+              <option value="{{ u.name }}" {% if selected_user and selected_user.name == u.name %}selected{% endif %}>
+                {{ '🎓' if u.user_type == 'Student' else '🏢' }} {{ u.name }} ({{ u.emp_id or 'No ID' }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
+            <button onclick="window.print()" class="cyber-button primary full-width">🖨️ Print Biometric ID Badge</button>
+            <a href="/enroll" class="cyber-button secondary full-width text-center">Enroll New Identity</a>
+          </div>
+
+          <div style="margin-top: 24px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+            <strong style="color:var(--neon-cyan);">SPECIFICATIONS:</strong><br>
+            • Standard CR80 Vertical Card<br>
+            • Encrypted 2D QR Access Key<br>
+            • Optical Facial Biometric Hash<br>
+            • Print-ready at 300 DPI layout
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Card Render -->
+      <div class="badge-preview-wrap">
+        {% if selected_user %}
+        <div class="smart-id-card">
+          <div class="card-lanyard-slot"></div>
+          
+          <div class="card-header">
+            <div class="card-org">NEXUS // SEC-BIO PASS</div>
+            <div class="card-chip"></div>
+          </div>
+
+          <div class="card-photo-area">
+            👤
+          </div>
+
+          <div class="card-name">{{ selected_user.name }}</div>
+          <div class="card-role-title">{{ selected_user.role_title or selected_user.user_type }}</div>
+
+          <div class="card-meta-grid">
+            <div>
+              <div class="card-meta-label">ID / ROLL NUMBER</div>
+              <div class="card-meta-val">{{ selected_user.emp_id or 'N/A' }}</div>
+            </div>
+            <div>
+              <div class="card-meta-label">COHORT</div>
+              <div class="card-meta-val">{{ selected_user.user_type }}</div>
+            </div>
+            <div style="grid-column: span 2;">
+              <div class="card-meta-label">GROUP / DEPARTMENT</div>
+              <div class="card-meta-val">{{ selected_user.department or 'General' }}</div>
+            </div>
+          </div>
+
+          <div class="card-bottom-row">
+            <div>
+              <div class="card-barcode">*{{ selected_user.emp_id or 'NEXUS' }}*</div>
+              <div style="font-size:0.62rem; color:var(--text-muted); letter-spacing:1px;">SEC-LEVEL: ALPHA // VERIFIED</div>
+            </div>
+            <img src="{{ qr_b64 }}" alt="QR Code" class="card-qr-img">
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</body>
+</html>

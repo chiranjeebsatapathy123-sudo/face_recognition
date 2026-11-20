@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Cryptographic Biometric Audit Ledger & Merkle Chain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .ledger-container {
+      padding: 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .ledger-overview-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto;
+      gap: 15px;
+      align-items: center;
+    }
+    .ledger-card {
+      background: rgba(10, 15, 26, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 15px 20px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .ledger-card-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+    .ledger-card-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .integrity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .integrity-valid {
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+    .integrity-invalid {
+      background: rgba(255, 51, 102, 0.2);
+      border: 1px solid #ff3366;
+      color: #ff3366;
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+      animation: flashBorder 0.6s infinite alternate;
+    }
+    @keyframes flashBorder {
+      0% { box-shadow: 0 0 10px #ff3366; }
+      100% { box-shadow: 0 0 25px #ff3366; }
+    }
+    .merkle-box {
+      background: rgba(5, 8, 15, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      color: #e2e8f0;
+      word-break: break-all;
+      margin-top: 4px;
+    }
+    .ledger-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .chain-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .block-card {
+      background: rgba(10, 15, 26, 0.95);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 18px 24px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+      position: relative;
+      transition: all 0.25s;
+    }
+    .block-card.tampered {
+      border-color: #ff3366 !important;
+      box-shadow: 0 0 30px rgba(255, 51, 102, 0.4) !important;
+      background: rgba(25, 10, 15, 0.95) !important;
+    }
+    .block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .block-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #00f3ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .block-ev-type {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: rgba(0, 243, 255, 0.12);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+    .block-grid {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+      gap: 20px;
+      font-size: 0.85rem;
+    }
+    .hash-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .hash-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+    .hash-val {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.76rem;
+      color: #00ff88;
+      word-break: break-all;
+      background: rgba(3, 7, 18, 0.8);
+      padding: 5px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .hash-val.prev {
+      color: #94a3b8;
+    }
+    .payload-box {
+      background: rgba(3, 7, 18, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.15);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+    }
+    .link-connector {
+      text-align: center;
+      color: rgba(0, 243, 255, 0.4);
+      font-size: 1.2rem;
+      margin: -6px 0;
+      font-family: 'Orbitron', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Reusable Two-Tier Header -->
+  {% set active_page = 'ledger' %}
+  {% set nav_icon = '⛓️' %}
+  {% set nav_title = 'NEXUS INTEGRITY // CRYPTOGRAPHIC AUDIT LEDGER' %}
+  {% set nav_subtitle = 'SHA-256 MERKLE CHAIN VERIFICATION, TAMPER-PROOF AUDIT BLOCKS & ZERO-KNOWLEDGE PROOF' %}
+  {% include 'nav_header.html' %}
+
+  <main class="ledger-container">
+    <!-- Top Summary & Control Strip -->
+    <div class="ledger-overview-strip">
+      <div class="ledger-card">
+        <div class="ledger-card-label">TOTAL CHAIN BLOCKS</div>
+        <div class="ledger-card-val" id="total-blocks-val">{{ ledger.summary.total_blocks }} BLOCKS</div>
+      </div>
+
+      <div class="ledger-card">
+        <div class="ledger-card-label">CURRENT MERKLE ROOT</div>
+        <div class="merkle-box" id="merkle-root-val" title="Click to copy root hash" onclick="copyHash(this.textContent)" style="cursor:pointer;">
+          {{ ledger.summary.merkle_root }}
+        </div>
+      </div>
+
+      <div class="ledger-card">
+        <div class="ledger-card-label">CRYPTOGRAPHIC STATUS</div>
+        <div>
+          {% if ledger.summary.is_chain_valid %}
+          <div class="integrity-badge integrity-valid" id="chain-badge">
+            <span>✓</span> 100% UNCOMPROMISED
+          </div>
+          {% else %}
+          <div class="integrity-badge integrity-invalid" id="chain-badge">
+            <span>⚠️</span> TAMPER AT BLOCK #{{ ledger.summary.broken_index }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="ledger-card">
+        <div class="ledger-card-label">LATEST BLOCK HASH</div>
+        <div class="merkle-box" style="color:#00ff88;">
+          {{ ledger.summary.latest_block_hash[:28] }}...
+        </div>
+      </div>
+
+      <div class="ledger-actions">
+        <button class="quick-preset-btn" onclick="verifyChain()">🔍 Verify Chain</button>
+        <button class="quick-preset-btn" onclick="simulateTamper(3)" style="color:#ff88a3; border-color:rgba(255,51,102,0.4);">⚠️ Simulate Tamper</button>
+        <button class="quick-preset-btn" onclick="repairChain()" style="color:#00ff88; border-color:rgba(0,255,136,0.4);">🛠️ Repair Chain</button>
+      </div>
+    </div>
+
+    <!-- Alert / Status Notice Bar -->
+    <div id="chain-status-alert" style="padding: 12px 20px; border-radius: 6px; font-family:'Orbitron',monospace; font-size: 0.82rem; letter-spacing:1px; background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; color:#00ff88; display:flex; justify-content:space-between; align-items:center;">
+      <span id="chain-status-text">
+        {% if ledger.summary.is_chain_valid %}
+        ◈ CRYPTOGRAPHIC INTEGRITY VERIFIED: Sequential SHA-256 Merkle chain verified across all {{ ledger.summary.total_blocks }} blocks. Zero tampering detected.
+        {% else %}
+        🚨 ALERT: Cryptographic mismatch detected at Block #{{ ledger.summary.broken_index }}! Block payload or previous hash divergence.
+        {% endif %}
+      </span>
+      <span style="font-size:0.75rem; color:#94a3b8;">ALGORITHM: SHA-256 / MERKLE-ROOT</span>
+    </div>
+
+    <!-- Blocks Stream -->
+    <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff; margin-top: 10px;">
+      ◈ CHRONOLOGICAL AUDIT CHAIN (LATEST TIP ➔ GENESIS)
+    </h3>
+
+    <div class="chain-container" id="blocks-container">
+      {% for b in ledger.blocks %}
+      {% set is_tampered = (not ledger.summary.is_chain_valid and ledger.summary.broken_index == b.block_index) %}
+      <div class="block-card {{ 'tampered' if is_tampered else '' }}" id="block-card-{{ b.block_index }}">
+        <div class="block-header">
+          <div class="block-num">
+            <span>⬡ BLOCK #{{ b.block_index }}</span>
+            <span style="font-size:0.75rem; color:#94a3b8; font-family:'Rajdhani',sans-serif;">({{ b.timestamp }})</span>
+            {% if b.block_index == 0 %}
+            <span style="font-size:0.68rem; background:#00ff88; color:#0a0f1a; padding:2px 8px; border-radius:3px; font-weight:800;">GENESIS</span>
+            {% endif %}
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span class="block-ev-type">{{ b.event_type }}</span>
+            <span style="font-family:'Orbitron',monospace; font-size:0.75rem; color:#ffb700;">NONCE: {{ b.nonce }}</span>
+          </div>
+        </div>
+
+        <div class="block-grid">
+          <div>
+            <div class="hash-row">
+              <span class="hash-label">PREVIOUS BLOCK HASH (prev_hash)</span>
+              <span class="hash-val prev">{{ b.prev_hash }}</span>
+            </div>
+            <div class="hash-row">
+              <span class="hash-label">CURRENT BLOCK HASH (block_hash)</span>
+              <span class="hash-val" style="{{ 'color:#ff3366 !important;' if is_tampered else '' }}">{{ b.block_hash }}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:#94a3b8; margin-top:8px;">
+              <span>SUBJECT: <strong style="color:#fff;">{{ b.subject }}</strong></span>
+              <span>PROOF STATUS: <strong style="color:{{ '#ff3366' if is_tampered else '#00ff88' }};">{{ 'TAMPERED' if is_tampered else 'VALIDATED' }}</strong></span>
+            </div>
+          </div>
+
+          <div>
+            <span class="hash-label" style="display:block; margin-bottom:5px;">CRYPTOGRAPHIC PAYLOAD DATA</span>
+            <div class="payload-box">
+              {% if b.payload_data %}
+                {% for k, v in b.payload_data.items() %}
+                <div><span style="color:#00f3ff;">{{ k }}</span>: <span style="color:#e2e8f0;">{{ v }}</span></div>
+                {% endfor %}
+              {% else %}
+                <pre style="margin:0;">{{ b.payload }}</pre>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% if not loop.last %}
+      <div class="link-connector">⇣ ⇣ ⇣ [SHA-256 HASH CONDUIT] ⇣ ⇣ ⇣</div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </main>
+
+  <script>
+    function copyHash(text) {
+      navigator.clipboard.writeText(text.trim());
+      alert("Merkle Root copied to clipboard!");
+    }
+
+    async function verifyChain() {
+      try {
+        const res = await fetch('/api/ledger/verify');
+        const data = await res.json();
+        updateChainStatusUI(data);
+        if (data.is_valid) {
+          playSfx('granted');
+        } else {
+          playSfx('denied');
+        }
+      } catch (e) {
+        alert("Verification failed: " + e.message);
+      }
+    }
+
+    async function simulateTamper(blockIdx = 3) {
+      if (!confirm(`Simulate malicious modification on Block #${blockIdx} to test cryptographic tamper detection?`)) return;
+      playSfx('denied');
+      try {
+        const res = await fetch(`/api/ledger/tamper?block=${blockIdx}`, { method: 'POST' });
+        const data = await res.json();
+        updateChainStatusUI(data);
+        setTimeout(() => location.reload(), 800);
+      } catch (e) {
+        alert("Tamper simulation failed: " + e.message);
+      }
+    }
+
+    async function repairChain() {
+      playSfx('click');
+      try {
+        const res = await fetch('/api/ledger/repair', { method: 'POST' });
+        const data = await res.json();
+        updateChainStatusUI(data);
+        playSfx('granted');
+        setTimeout(() => location.reload(), 800);
+      } catch (e) {
+        alert("Chain repair failed: " + e.message);
+      }
+    }
+
+    function updateChainStatusUI(data) {
+      const badge = document.getElementById('chain-badge');
+      const textEl = document.getElementById('chain-status-text');
+      const alertBox = document.getElementById('chain-status-alert');
+
+      if (data.is_valid) {
+        badge.className = "integrity-badge integrity-valid";
+        badge.innerHTML = "<span>✓</span> 100% UNCOMPROMISED";
+        textEl.textContent = "◈ CRYPTOGRAPHIC INTEGRITY VERIFIED: Sequential SHA-256 Merkle chain verified across all blocks. Zero tampering detected.";
+        alertBox.style.background = "rgba(0, 255, 136, 0.1)";
+        alertBox.style.borderColor = "#00ff88";
+        alertBox.style.color = "#00ff88";
+      } else {
+        badge.className = "integrity-badge integrity-invalid";
+        badge.innerHTML = `<span>⚠️</span> TAMPER AT BLOCK #${data.broken_index}`;
+        textEl.textContent = `🚨 ALERT: Cryptographic mismatch detected at Block #${data.broken_index}! Hash validation failed.`;
+        alertBox.style.background = "rgba(255, 51, 102, 0.2)";
+        alertBox.style.borderColor = "#ff3366";
+        alertBox.style.color = "#ff3366";
+      }
+    }
+  </script>
+</body>
+</html>

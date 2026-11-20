@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // IoT Biometric Access & Turnstile Relay Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .doors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .door-card {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+    .door-card.unlocked {
+      border-color: #00ff88;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.25);
+    }
+    .door-card.locked {
+      border-color: rgba(255, 51, 102, 0.4);
+    }
+    .door-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .door-code {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .door-relay-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .relay-locked {
+      background: rgba(255, 51, 102, 0.15);
+      border: 1px solid #ff3366;
+      color: #ff3366;
+    }
+    .relay-unlocked {
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid #00ff88;
+      color: #00ff88;
+    }
+    .circuit-graphic {
+      width: 100%;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+      margin: 12px 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .circuit-line {
+      flex: 1;
+      height: 2px;
+      background: rgba(0, 243, 255, 0.3);
+      position: relative;
+    }
+    .circuit-line.active {
+      background: #00ff88;
+      box-shadow: 0 0 10px #00ff88;
+    }
+    .relay-node {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ff3366;
+      border: 2px solid #fff;
+      transition: all 0.3s;
+    }
+    .relay-node.unlocked {
+      background: #00ff88;
+      box-shadow: 0 0 12px #00ff88;
+    }
+    .door-info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .door-info-val {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    .door-btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    .door-action-btn {
+      flex: 1;
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.35);
+      color: #00f3ff;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .door-action-btn:hover {
+      background: rgba(0, 243, 255, 0.25);
+      box-shadow: 0 0 12px rgba(0, 243, 255, 0.35);
+    }
+    .emergency-bar {
+      background: rgba(13, 17, 23, 0.9);
+      border: 1px solid rgba(255, 51, 102, 0.4);
+      border-radius: 8px;
+      padding: 18px 25px;
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .em-btn {
+      background: linear-gradient(135deg, #ff3366, #990022);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+      transition: all 0.2s;
+    }
+    .em-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255, 51, 102, 0.7);
+    }
+    .panic-btn {
+      background: linear-gradient(135deg, #00ff88, #009944);
+      color: #0a0e17;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+      transition: all 0.2s;
+    }
+    .panic-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.7);
+    }
+    .tailgate-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-top: 25px;
+    }
+    .panel-box {
+      background: rgba(13, 17, 23, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .log-table th, .log-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    .log-table th {
+      color: #00f3ff;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'access' %}
+  {% set nav_icon = '🚪' %}
+  {% set nav_title = 'IOT ACCESS CONTROL // BIOMETRIC RELAYS & PERIMETER DEFENSE' %}
+  {% set nav_subtitle = 'HARDWARE SOLENOID RELAY GOVERNANCE, SPEED-GATE BARRIERS & ANTI-TAILGATING SENSOR' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Doors & Turnstiles Grid -->
+    <h3 style="font-family:'Orbitron',monospace; font-size: 1rem; color:#00f3ff; margin-bottom: 5px;">
+      CONTROLLED HARDWARE ACCESS RELAYS & TURNSTILES
+    </h3>
+    <p style="font-size:0.85rem; color:#94a3b8; margin-bottom: 15px;">
+      Real-time solenoid relay statuses synced with facial recognition & 2FA badge scans:
+    </p>
+
+    <div class="doors-grid" id="doors-container">
+      {% for d in doors %}
+      {% set is_unl = d.relay_state == 'UNLOCKED' %}
+      <div class="door-card {{ 'unlocked' if is_unl else 'locked' }}" id="card-{{ d.door_code }}">
+        <div class="door-header">
+          <div class="door-code">{{ d.door_code }}</div>
+          <div class="door-relay-indicator {{ 'relay-unlocked' if is_unl else 'relay-locked' }}" id="ind-{{ d.door_code }}">
+            <span class="pulse-dot" style="background: {{ '#00ff88' if is_unl else '#ff3366' }};"></span>
+            <span id="state-txt-{{ d.door_code }}">{{ d.relay_state }}</span>
+          </div>
+        </div>
+
+        <div style="font-weight: 700; font-size: 0.95rem; color:#fff; margin-bottom: 4px;">{{ d.name }}</div>
+        <div style="font-size: 0.78rem; color:#00f3ff; margin-bottom: 10px;">{{ d.zone }}</div>
+
+        <!-- Animated circuit line -->
+        <div class="circuit-graphic">
+          <span style="font-size:0.7rem; color:#94a3b8;">SOLENOID RELAY</span>
+          <div class="circuit-line {{ 'active' if is_unl else '' }}" id="cline-{{ d.door_code }}"></div>
+          <div class="relay-node {{ 'unlocked' if is_unl else '' }}" id="rnode-{{ d.door_code }}"></div>
+        </div>
+
+        <div class="door-info-row">
+          <span>Clearance Required:</span>
+          <span class="door-info-val" style="color: {{ '#ffb700' if d.clearance_required == 'VIP' else '#00f3ff' }};">
+            {{ d.clearance_required }}
+          </span>
+        </div>
+        <div class="door-info-row">
+          <span>Last Grant User:</span>
+          <span class="door-info-val" id="user-{{ d.door_code }}">{{ d.last_user }}</span>
+        </div>
+        <div class="door-info-row">
+          <span>Last Cycle Time:</span>
+          <span class="door-info-val" id="time-{{ d.door_code }}">{{ d.last_access_time }}</span>
+        </div>
+
+        <div class="door-btn-row">
+          <button class="door-action-btn" onclick="pulseDoor('{{ d.door_code }}')">⚡ Pulse (5s)</button>
+          <button class="door-action-btn" style="border-color:#00ff88; color:#00ff88;" onclick="setDoor('{{ d.door_code }}', 'unlock')">🔓 Unlock</button>
+          <button class="door-action-btn" style="border-color:#ff3366; color:#ff3366;" onclick="setDoor('{{ d.door_code }}', 'lock')">🔒 Lock</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Emergency Command Bar -->
+    <div class="emergency-bar">
+      <div>
+        <h4 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#ff3366; margin-bottom: 4px;">
+          🚨 MASTER PERIMETER OVERRIDES
+        </h4>
+        <p style="font-size: 0.8rem; color:#94a3b8;">
+          DEFCON facility lockdown triggers immediate lock on all turnstiles and armored doors; Panic release clears all solenoids.
+        </p>
+      </div>
+      <div style="display: flex; gap: 15px;">
+        <button class="em-btn" onclick="masterLockdown()">
+          🔒 MASTER LOCKDOWN (ALL DOORS)
+        </button>
+        <button class="panic-btn" onclick="masterPanicUnlock()">
+          🏃 FIRE PANIC EVACUATION UNLOCK
+        </button>
+      </div>
+    </div>
+
+    <!-- Tailgating & Hardware Access Logs -->
+    <div class="tailgate-section">
+      <!-- Anti-Tailgating Sensor Station -->
+      <div class="panel-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.9rem; color:#00f3ff;">
+            🛡️ ANTI-TAILGATING SENSOR & PIGGYBACKING AUDIT
+          </h4>
+          <span style="font-size: 0.75rem; color:#ff3366; border: 1px solid #ff3366; padding: 2px 8px; border-radius: 4px;">
+            OPTICAL BEAM ACTIVE
+          </span>
+        </div>
+
+        <p style="font-size: 0.82rem; color:#94a3b8; margin-bottom: 12px;">
+          Detects unauthorized second individuals following directly behind a verified badge or face without clearance:
+        </p>
+
+        <button class="door-action-btn" style="width: 100%; padding: 12px; margin-bottom: 15px; border-color: #ff3366; color: #ff3366; background: rgba(255, 51, 102, 0.1);" onclick="simulateTailgating()">
+          ⚠ SIMULATE TAILGATING BREACH (2 HEADS AT TURNSTILE 01)
+        </button>
+
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Zone / Gate</th>
+              <th>Primary Badge</th>
+              <th>Headcount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tailgate-tbody">
+            {% if tailgate_events %}
+              {% for ev in tailgate_events %}
+              <tr>
+                <td>{{ ev.time }}</td>
+                <td>{{ ev.zone }}</td>
+                <td><strong>{{ ev.primary_user }}</strong></td>
+                <td style="color:#ff3366; font-weight:700;">{{ ev.headcount }} INTRUDERS</td>
+                <td style="color:#ff3366;">FLAGGED</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">
+                  Zero tailgating breaches logged. Perimeter barrier secure.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Real-Time Door Access Grant Logs -->
+      <div class="panel-box">
+        <h4 style="font-family:'Orbitron',monospace; font-size: 0.9rem; color:#00f3ff; margin-bottom: 15px;">
+          HARDWARE ACCESS RELAY AUDIT REEL
+        </h4>
+        <div style="max-height: 320px; overflow-y: auto;">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Door Code</th>
+                <th>Subject</th>
+                <th>Clearance</th>
+                <th>Verdict</th>
+              </tr>
+            </thead>
+            <tbody id="access-logs-tbody">
+              {% if logs %}
+                {% for l in logs %}
+                <tr>
+                  <td>{{ l.time }}</td>
+                  <td><strong>{{ l.door_code }}</strong></td>
+                  <td>{{ l.user_name }}</td>
+                  <td style="color: {{ '#ffb700' if l.clearance == 'VIP' else '#00f3ff' }};">{{ l.clearance }}</td>
+                  <td style="color: {{ '#00ff88' if l.status == 'GRANTED' else '#ff3366' }}; font-weight: 700;">
+                    {{ l.status }}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">
+                    No hardware access logs recorded yet today.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function pulseDoor(dcode) {
+      try {
+        const res = await fetch('/api/doors', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ door_code: dcode, action: 'pulse', user: 'SEC-OPERATOR' })
+        });
+        const data = await res.json();
+        updateDoorUI(dcode, 'UNLOCKED', 'SEC-OPERATOR');
+        setTimeout(() => {
+          updateDoorUI(dcode, 'LOCKED', 'SEC-OPERATOR');
+        }, 5000);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function setDoor(dcode, act) {
+      try {
+        const res = await fetch('/api/doors', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ door_code: dcode, action: act, user: 'ADMIN' })
+        });
+        const data = await res.json();
+        updateDoorUI(dcode, act === 'unlock' ? 'UNLOCKED' : 'LOCKED', 'ADMIN');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function masterLockdown() {
+      if (!confirm("CONFIRM MASTER FACILITY LOCKDOWN: All doors and turnstiles will immediately lock!")) return;
+      try {
+        const res = await fetch('/api/doors/lockdown', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function masterPanicUnlock() {
+      if (!confirm("FIRE PANIC EVACUATION OVERRIDE: Release all turnstile solenoids immediately?")) return;
+      try {
+        const res = await fetch('/api/doors/panic_unlock', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function simulateTailgating() {
+      try {
+        const res = await fetch('/api/tailgating/simulate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ zone: 'Zone 1 - Main Turnstile 01', primary_user: 'Chiru', headcount: 2 })
+        });
+        const data = await res.json();
+        alert('Tailgating alarm logged: 2 heads detected following verified badge Chiru!');
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateDoorUI(dcode, state, user) {
+      const card = document.getElementById(`card-${dcode}`);
+      const ind = document.getElementById(`ind-${dcode}`);
+      const stateTxt = document.getElementById(`state-txt-${dcode}`);
+      const cline = document.getElementById(`cline-${dcode}`);
+      const rnode = document.getElementById(`rnode-${dcode}`);
+      const userElem = document.getElementById(`user-${dcode}`);
+
+      if (!card) return;
+      if (state === 'UNLOCKED') {
+        card.className = 'door-card unlocked';
+        ind.className = 'door-relay-indicator relay-unlocked';
+        cline.className = 'circuit-line active';
+        rnode.className = 'relay-node unlocked';
+        stateTxt.textContent = 'UNLOCKED';
+      } else {
+        card.className = 'door-card locked';
+        ind.className = 'door-relay-indicator relay-locked';
+        cline.className = 'circuit-line';
+        rnode.className = 'relay-node';
+        stateTxt.textContent = 'LOCKED';
+      }
+      if (user && userElem) userElem.textContent = user;
+    }
+
+    // Connect SSE for live door relay events
+    const evtSource = new EventSource('/api/events');
+    evtSource.onmessage = function(e) {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.type === 'door_relay') {
+          const d = payload.data;
+          updateDoorUI(d.door_code, d.relay_state, d.user);
+          if (d.relay_state === 'UNLOCKED') {
+            setTimeout(() => {
+              updateDoorUI(d.door_code, 'LOCKED', d.user);
+            }, 5000);
+          }
+        }
+      } catch (err) {}
+    };
+  </script>
+</body>
+</html>

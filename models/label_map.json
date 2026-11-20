@@ -1,0 +1,12 @@
+{
+  "label_to_idx": {
+    "Chiru": 0,
+    "rahul": 1,
+    "sourav": 2
+  },
+  "idx_to_label": {
+    "0": "Chiru",
+    "1": "rahul",
+    "2": "sourav"
+  }
+}

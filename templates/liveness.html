@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Biometric Anti-Spoofing & Liveness Laboratory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .liveness-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .probe-box {
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .preview-window {
+      width: 100%;
+      height: 280px;
+      background: #080c14;
+      border: 2px dashed rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .preview-window img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .benchmark-row {
+      background: rgba(13, 17, 23, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 8px;
+      padding: 14px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    .bench-btn {
+      background: rgba(0, 243, 255, 0.1);
+      border: 1px solid rgba(0, 243, 255, 0.35);
+      color: #00f3ff;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bench-btn:hover {
+      background: rgba(0, 243, 255, 0.25);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    }
+    .bench-btn.danger {
+      border-color: #ff3366;
+      color: #ff3366;
+    }
+    .bench-btn.amber {
+      border-color: #ff9100;
+      color: #ff9100;
+    }
+    .verdict-box {
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .tel-card {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 15px;
+      text-align: center;
+    }
+    .tel-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .tel-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .action-btn-lg {
+      background: linear-gradient(135deg, #00ff88, #00a8ff);
+      color: #0a0e17;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .action-btn-lg:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'liveness' %}
+  {% set nav_icon = '🛡️' %}
+  {% set nav_title = 'BIOMETRIC ANTI-SPOOFING // ISO/IEC 30107 PAD LAB' %}
+  {% set nav_subtitle = 'MICRO-TEXTURE LAPLACIAN FREQUENCY, PORE DENSITY & CHROMATICITY DISPERSION' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Benchmark Presets Bar -->
+    <div class="benchmark-row">
+      <div>
+        <strong style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#00f3ff;">⚡ BENCHMARK ATTACK VECTORS:</strong>
+        <span style="font-size:0.85rem; color:#94a3b8; margin-left: 10px;">Select pre-loaded presentation vectors to test anti-spoof defense:</span>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="bench-btn" onclick="loadSample('live')">
+          ✓ Genuine Live Human
+        </button>
+        <button class="bench-btn danger" onclick="loadSample('screen')">
+          ⚠ Tablet Screen Replay Attack
+        </button>
+        <button class="bench-btn amber" onclick="loadSample('paper')">
+          ✗ Paper Photo Printout Attack
+        </button>
+      </div>
+    </div>
+
+    <div class="liveness-layout">
+      <!-- Probe Input Window -->
+      <div class="probe-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff;">
+            PRESENTATION PROBE
+          </h3>
+          <span id="probe-title-tag" style="font-size:0.75rem; color:#94a3b8;">NO PROBE LOADED</span>
+        </div>
+
+        <div class="preview-window" id="preview-window">
+          <span style="color:#64748b; font-size:0.85rem;">Upload or Drop Image File</span>
+        </div>
+
+        <input type="file" id="file-probe" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+        <div style="display:flex; gap:10px;">
+          <button class="bench-btn" style="flex:1;" onclick="document.getElementById('file-probe').click()">
+            📁 Upload Probe Image
+          </button>
+        </div>
+
+        <button class="action-btn-lg" onclick="executeDiagnostics()">
+          🔬 RUN LIVENESS DIAGNOSTICS
+        </button>
+      </div>
+
+      <!-- Diagnostic Results Panel -->
+      <div style="background: rgba(13, 17, 23, 0.85); border: 1px solid rgba(0, 243, 255, 0.25); border-radius: 8px; padding: 25px;" id="results-card">
+        <!-- Verdict Banner -->
+        <div class="verdict-box" id="verdict-banner" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 2px solid #00ff88;">
+          LIVENESS ENGINE READY // LOAD PROBE TO DIAGNOSE
+        </div>
+
+        <!-- Telemetry Cards -->
+        <div class="telemetry-grid">
+          <div class="tel-card">
+            <div class="tel-label">Liveness Composite Index</div>
+            <div class="tel-val" id="val-liveness" style="color: #00ff88;">--%</div>
+          </div>
+          <div class="tel-card">
+            <div class="tel-label">Texture Frequency Variance</div>
+            <div class="tel-val" id="val-texture">--</div>
+          </div>
+          <div class="tel-card">
+            <div class="tel-label">Head Yaw Rotation Angle</div>
+            <div class="tel-val" id="val-yaw">--°</div>
+          </div>
+        </div>
+
+        <!-- Attack Vector Breakdown -->
+        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 6px; padding: 18px; margin-bottom: 20px;">
+          <h4 style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#00f3ff; margin-bottom: 12px;">
+            PRESENTATION ATTACK DEFENSE BREAKDOWN
+          </h4>
+          <div style="display:flex; flex-direction:column; gap:10px; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span style="color:#94a3b8;">Presentation Attack Classification:</span>
+              <strong id="val-spoof-type" style="color:#00ff88;">--</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span style="color:#94a3b8;">Skin Pore Micro-Texture Status:</span>
+              <strong id="val-texture-status" style="color:#00f3ff;">--</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span style="color:#94a3b8;">Skin Chromaticity Dispersion Score:</span>
+              <strong id="val-chroma" style="color:#e2e8f0;">--</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#94a3b8;">Active Challenge (Turn/Smile) Compliance:</span>
+              <strong id="val-challenge" style="color:#ffb700;">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:14px; background: rgba(0, 243, 255, 0.08); border-left:3px solid #00f3ff; border-radius:4px; font-size:0.82rem; color:#cbd5e1; line-height: 1.4;">
+          <strong style="color:#00f3ff; font-family:'Orbitron',monospace;">ISO/IEC 30107-3 PAD COMPLIANCE:</strong>
+          Anti-spoofing engine continuously cross-examines 2D pixel-grid moiré artifacts, Laplacian high-frequency edge variance, and real-time volumetric facial curvature to eliminate deepfakes, silicone masks, and presentation attacks.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let activeProbe_b64 = null;
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        activeProbe_b64 = evt.target.result;
+        document.getElementById('preview-window').innerHTML = `<img src="${activeProbe_b64}">`;
+        document.getElementById('probe-title-tag').textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function loadSample(type) {
+      try {
+        const res = await fetch(`/api/liveness_benchmark_samples?type=${type}`);
+        const data = await res.json();
+        if (data.success) {
+          activeProbe_b64 = data.image;
+          document.getElementById('preview-window').innerHTML = `<img src="${data.image}">`;
+          document.getElementById('probe-title-tag').textContent = data.title;
+          executeDiagnostics();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function executeDiagnostics() {
+      if (!activeProbe_b64) {
+        alert("Please upload an image or load a benchmark vector first.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/liveness_diagnostics', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ image: activeProbe_b64 })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const d = data.diagnostics;
+          const banner = document.getElementById('verdict-banner');
+          banner.textContent = d.verdict;
+          banner.style.color = d.verdict_color;
+          banner.style.borderColor = d.verdict_color;
+          banner.style.background = d.verdict_color + '22';
+
+          document.getElementById('val-liveness').textContent = d.liveness_score + '%';
+          document.getElementById('val-liveness').style.color = d.verdict_color;
+
+          document.getElementById('val-texture').textContent = d.metrics.laplacian_var;
+          document.getElementById('val-yaw').textContent = d.metrics.head_yaw_deg + '°';
+
+          document.getElementById('val-spoof-type').textContent = d.spoof_type;
+          document.getElementById('val-spoof-type').style.color = d.verdict_color;
+
+          document.getElementById('val-texture-status').textContent = d.metrics.texture_status;
+          document.getElementById('val-chroma').textContent = d.metrics.chroma_score + '%';
+          document.getElementById('val-challenge').textContent = d.metrics.active_challenge_passed ? '✓ PASSED' : 'PENDING RESPONSE';
+          document.getElementById('val-challenge').style.color = d.metrics.active_challenge_passed ? '#00ff88' : '#ffb700';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

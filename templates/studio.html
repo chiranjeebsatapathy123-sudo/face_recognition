@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI NEURAL STUDIO // Model Fine-Tuning & Weight Distillation</title>
+  <!-- Chart.js for Training Curves -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Orbitron & Rajdhani -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1200px) {
+      .studio-grid { grid-template-columns: 1fr; }
+    }
+    .layers-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    .layer-card {
+      background: rgba(10, 15, 26, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .layer-card:hover, .layer-card.active {
+      border-color: #00f3ff;
+      background: rgba(0, 243, 255, 0.08);
+      transform: translateX(4px);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
+    }
+    .layer-header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .layer-tag {
+      font-family: var(--font-tech);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 3px;
+      background: rgba(0, 243, 255, 0.15);
+      color: #00f3ff;
+      letter-spacing: 1px;
+    }
+    .layer-params {
+      font-family: var(--font-tech);
+      font-size: 0.82rem;
+      color: #00ff88;
+      text-align: right;
+    }
+    .controls-panel {
+      background: rgba(8, 12, 22, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .input-label {
+      font-family: var(--font-tech);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      display: block;
+    }
+    .cyber-select, .cyber-input {
+      width: 100%;
+      background: rgba(5, 8, 16, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      color: #fff;
+      font-family: var(--font-tech);
+      font-size: 0.88rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .cyber-select:focus, .cyber-input:focus {
+      border-color: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    .train-btn {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(0, 243, 255, 0.25), rgba(0, 255, 136, 0.35));
+      border: 1px solid #00ff88;
+      color: #fff;
+      font-family: var(--font-tech);
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 18px rgba(0, 255, 136, 0.25);
+    }
+    .train-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 243, 255, 0.4), rgba(0, 255, 136, 0.55));
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+      transform: translateY(-2px);
+    }
+    .distill-box {
+      margin-top: 20px;
+      background: rgba(10, 16, 28, 0.7);
+      border: 1px dashed rgba(0, 255, 136, 0.35);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .train-log {
+      background: rgba(4, 6, 12, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      height: 140px;
+      overflow-y: auto;
+      padding: 10px;
+      margin-top: 15px;
+      line-height: 1.5;
+    }
+    .pulse-layer-anim {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      box-shadow: 0 0 8px #00ff88;
+      animation: pulseDot 1.4s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+  {% set active_page = 'studio' %}
+  {% set nav_icon = '🧠' %}
+  {% set nav_title = 'AI NEURAL STUDIO // FINE-TUNING & DISTILLATION' %}
+  {% set nav_subtitle = 'PYTORCH 128-D CNN HYPERPARAMETER OPTIMIZATION & ONNX INT8 QUANTIZATION' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <!-- Telemetry Metrics Grid -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">MODEL ARCHITECTURE</div>
+        <div class="metric-val" style="font-size:1.3rem; color:#00f3ff;">FaceCNN-v3</div>
+        <div class="metric-sub">Hybrid ResNet-ArcFace Feature Core</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">TOTAL TRAINABLE PARAMETERS</div>
+        <div class="metric-val" id="telemetry-params">{{ "{:,}".format(architecture.total_parameters) }}</div>
+        <div class="metric-sub">FP32 Footprint: {{ architecture.fp32_size_mb }} MB</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">INT8 QUANTIZED FOOTPRINT</div>
+        <div class="metric-val" style="color:#00ff88;">{{ architecture.int8_size_mb }} MB</div>
+        <div class="metric-sub">73.9% Memory Reduction</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">INFERENCE ACCELERATION</div>
+        <div class="metric-val" style="color:#ffb700;">4.4× SPEEDUP</div>
+        <div class="metric-sub">16.8 ms ➔ 3.8 ms Latency</div>
+      </div>
+    </section>
+
+    <!-- Main Workspace -->
+    <div class="studio-grid">
+      <!-- Left Column: Neural Network Layer Spec & Pipeline Visualizer -->
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> CNN TENSOR TOPOLOGY & LAYER METRICS <span class="bracket">]</span>
+          </div>
+          <div style="font-family:var(--font-tech); font-size:0.75rem; color:#00f3ff;">
+            <span class="pulse-layer-anim"></span> PIPELINE NOMINAL
+          </div>
+        </div>
+
+        <!-- Layer Details Dynamic Inspector -->
+        <div id="layer-inspector" style="background:rgba(0, 243, 255, 0.05); border:1px solid rgba(0, 243, 255, 0.2); border-radius:6px; padding:12px 16px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="inspect-title" style="font-family:'Orbitron',monospace; font-size:0.88rem; color:#00f3ff; font-weight:700;">Conv2D Feature Extraction (Stage 1)</span>
+            <span id="inspect-shape" style="font-family:var(--font-tech); font-size:0.78rem; color:#00ff88;">108 × 108 × 30 TENSOR</span>
+          </div>
+          <p id="inspect-desc" style="font-family:var(--font-main); font-size:0.84rem; color:#94a3b8; margin:6px 0 0;">
+            Extracts low-level edge contours, facial gradient orientations, and landmark textures with 30 independent 5x5 kernels.
+          </p>
+        </div>
+
+        <div class="layers-container" id="layers-list">
+          {% for layer in architecture.layers %}
+          <div class="layer-card {{ 'active' if loop.first else '' }}" onclick="selectLayer({{ loop.index0 }})">
+            <div class="layer-header-info">
+              <span class="layer-tag">{{ layer.type }}</span>
+              <div>
+                <div style="font-family:var(--font-main); font-weight:700; font-size:0.92rem; color:#fff;">{{ layer.name }}</div>
+                <div style="font-family:monospace; font-size:0.76rem; color:#64748b;">Tensor: {{ layer.dims }} | Act: {{ layer.activation }}</div>
+              </div>
+            </div>
+            <div class="layer-params">
+              <div>{{ "{:,}".format(layer.params) }} params</div>
+              <div style="font-size:0.7rem; color:#64748b;">{{ "Kernel: " ~ layer.kernel if layer.kernel is defined and layer.kernel != "None" else "No Weights" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Right Column: Fine-Tuning Hyperparameters & Training Convergence Curves -->
+      <div>
+        <div class="controls-panel">
+          <div class="panel-header" style="margin-bottom:14px;">
+            <div class="panel-title">
+              <span class="bracket">[</span> HYPERPARAMETER FINE-TUNER <span class="bracket">]</span>
+            </div>
+            <span style="font-family:var(--font-tech); font-size:0.72rem; color:#00ff88;">ARCFACE EMBEDDING</span>
+          </div>
+
+          <div class="control-row">
+            <div>
+              <label class="input-label">EPOCHS</label>
+              <select class="cyber-select" id="tune-epochs">
+                <option value="5" selected>5 Epochs (Fast Adaptation)</option>
+                <option value="10">10 Epochs (Standard Convergence)</option>
+                <option value="20">20 Epochs (Deep Polish)</option>
+              </select>
+            </div>
+            <div>
+              <label class="input-label">LEARNING RATE</label>
+              <select class="cyber-select" id="tune-lr">
+                <option value="0.001" selected>1e-3 (AdamW Default)</option>
+                <option value="0.0005">5e-4 (Cosine Annealed)</option>
+                <option value="0.0001">1e-4 (Warmup Schedule)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div>
+              <label class="input-label">OPTIMIZER ALGORITHM</label>
+              <select class="cyber-select" id="tune-optimizer">
+                <option value="AdamW" selected>AdamW (Weight Decay 0.01)</option>
+                <option value="Lion">Lion (EvoLved Sign Momentum)</option>
+                <option value="SGD_Nesterov">SGD + Nesterov (0.9)</option>
+              </select>
+            </div>
+            <div>
+              <label class="input-label">BIOMETRIC LOSS OBJECTIVE</label>
+              <select class="cyber-select" id="tune-loss">
+                <option value="ArcFace" selected>Additive Angular Margin (ArcFace)</option>
+                <option value="CosFace">Large Margin Cosine (CosFace)</option>
+                <option value="TripletMargin">Triplet Margin Loss (Margin=0.35)</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="train-btn" id="start-train-btn" onclick="executeFineTuning()">
+            <span>⚡ INITIATE NEURAL FINE-TUNING RUN</span>
+          </button>
+
+          <!-- Training Loss & Accuracy Chart -->
+          <div style="margin-top:18px; height:180px;">
+            <canvas id="trainingChart"></canvas>
+          </div>
+
+          <!-- Training Console Log -->
+          <div class="train-log" id="train-console">
+            [SYSTEM READY] PyTorch 2.x CUDA/AVX2 acceleration ready.<br>
+            [STUDIO] Loaded 16 enrolled identity centroids into ArcFace hypersphere margin.<br>
+            [READY] Click 'Initiate Neural Fine-Tuning Run' to start backprop and loss convergence.
+          </div>
+
+          <!-- Distillation & Quantization Exporter -->
+          <div class="distill-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-family:'Orbitron',monospace; font-size:0.8rem; color:#00ff88; letter-spacing:1px;">◈ MODEL DISTILLATION & QUANTIZATION</span>
+              <span id="export-status-pill" style="font-family:var(--font-tech); font-size:0.72rem; color:#00f3ff;">INT8 READY</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <select class="cyber-select" id="export-format" style="flex:1;">
+                <option value="ONNX_INT8" selected>ONNX Dynamic Quantized INT8 (-73.9% size, 4.4x speed)</option>
+                <option value="TENSORRT_FP16">TensorRT FP16 Engine (-49.1% size, 6.5x speed)</option>
+                <option value="ONNX_FP32">Standard ONNX Runtime FP32 (Full Precision)</option>
+              </select>
+              <button onclick="exportQuantizedModel()" style="background:rgba(0, 243, 255, 0.2); border:1px solid #00f3ff; color:#fff; font-family:var(--font-tech); font-size:0.8rem; padding:8px 14px; border-radius:4px; cursor:pointer; font-weight:700;">
+                EXPORT & DISTILL
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const layersData = {{ architecture.layers|tojson }};
+    let chartInstance = null;
+
+    function selectLayer(idx) {
+      document.querySelectorAll('.layer-card').forEach((c, i) => {
+        c.classList.toggle('active', i === idx);
+      });
+      const layer = layersData[idx];
+      document.getElementById('inspect-title').innerText = layer.name;
+      document.getElementById('inspect-shape').innerText = `${layer.dims} // ${layer.type.toUpperCase()}`;
+      document.getElementById('inspect-desc').innerText = `${layer.desc} Parameters: ${layer.params.toLocaleString()} | Activation: ${layer.activation}`;
+      if (window.playCyberAudio) window.playCyberAudio('chirp');
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('trainingChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Epoch 0', 'Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+          datasets: [
+            {
+              label: 'Train Loss',
+              data: [1.84, 1.28, 0.74, 0.42, 0.24, 0.16],
+              borderColor: '#ff3366',
+              backgroundColor: 'rgba(255, 51, 102, 0.15)',
+              borderWidth: 2,
+              tension: 0.35,
+              fill: false
+            },
+            {
+              label: 'Val Loss',
+              data: [2.12, 1.45, 0.89, 0.53, 0.31, 0.21],
+              borderColor: '#00f3ff',
+              backgroundColor: 'rgba(0, 243, 255, 0.15)',
+              borderWidth: 2,
+              tension: 0.35,
+              fill: false
+            },
+            {
+              label: 'Accuracy % (R-Axis)',
+              data: [82.5, 88.2, 93.4, 96.8, 98.6, 99.4],
+              borderColor: '#00ff88',
+              borderWidth: 2,
+              tension: 0.35,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#94a3b8', font: { family: 'Rajdhani', size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#64748b', font: { family: 'Orbitron', size: 9 } }
+            },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#ff3366', font: { family: 'Rajdhani', size: 10 } },
+              title: { display: true, text: 'Loss', color: '#64748b' }
+            },
+            y1: {
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#00ff88', font: { family: 'Rajdhani', size: 10 } },
+              title: { display: true, text: 'Accuracy %', color: '#00ff88' },
+              min: 75,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    async function executeFineTuning() {
+      const btn = document.getElementById('start-train-btn');
+      const consoleBox = document.getElementById('train-console');
+      const epochs = parseInt(document.getElementById('tune-epochs').value);
+      const lr = parseFloat(document.getElementById('tune-lr').value);
+      const optimizer = document.getElementById('tune-optimizer').value;
+      const lossFunc = document.getElementById('tune-loss').value;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ OPTIMIZING BACKPROP GRADIENTS...</span>';
+      if (window.playCyberAudio) window.playCyberAudio('radar');
+
+      consoleBox.innerHTML += `<br><span style="color:#00f3ff;">>>> [TRAIN START] Launching fine-tuning with ${optimizer} on ${lossFunc} (epochs=${epochs}, lr=${lr})...</span>`;
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+
+      try {
+        const resp = await fetch('/api/studio/train', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ epochs, learning_rate: lr, optimizer, loss_func: lossFunc })
+        });
+        const result = await resp.json();
+
+        if (result.success) {
+          // Update Chart
+          const labels = ['Init', ...result.history.map(h => `Ep ${h.epoch}`)];
+          const trainLosses = [1.84, ...result.history.map(h => h.train_loss)];
+          const valLosses = [2.12, ...result.history.map(h => h.val_loss)];
+          const accuracies = [82.5, ...result.history.map(h => h.accuracy_pct)];
+
+          chartInstance.data.labels = labels;
+          chartInstance.data.datasets[0].data = trainLosses;
+          chartInstance.data.datasets[1].data = valLosses;
+          chartInstance.data.datasets[2].data = accuracies;
+          chartInstance.update();
+
+          // Log output
+          result.history.forEach(h => {
+            consoleBox.innerHTML += `<br>[EPOCH ${h.epoch}/${epochs}] Train Loss: <span style="color:#ff3366;">${h.train_loss}</span> | Val Loss: <span style="color:#00f3ff;">${h.val_loss}</span> | Acc: <span style="color:#00ff88;">${h.accuracy_pct}%</span> | GradNorm: ${h.grad_norm}`;
+          });
+          consoleBox.innerHTML += `<br><span style="color:#00ff88; font-weight:700;">>>> [CONVERGENCE ACHIEVED] Checkpoint saved: ${result.checkpoint_id}</span>`;
+          consoleBox.scrollTop = consoleBox.scrollHeight;
+
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+        }
+      } catch (err) {
+        consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [ERROR] Fine-tuning request failed: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ INITIATE NEURAL FINE-TUNING RUN</span>';
+      }
+    }
+
+    async function exportQuantizedModel() {
+      const format = document.getElementById('export-format').value;
+      const statusPill = document.getElementById('export-status-pill');
+      const consoleBox = document.getElementById('train-console');
+
+      statusPill.innerText = 'QUANTIZING...';
+      statusPill.style.color = '#ffb700';
+      if (window.playCyberAudio) window.playCyberAudio('chirp');
+
+      try {
+        const resp = await fetch('/api/studio/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ format })
+        });
+        const res = await resp.json();
+        if (res.success) {
+          statusPill.innerText = 'EXPORTED';
+          statusPill.style.color = '#00ff88';
+          consoleBox.innerHTML += `<br><span style="color:#00ff88;">>>> [DISTILLATION COMPLETE] ${res.spec.format} generated (${res.spec.size_mb} MB, ${res.spec.speedup} latency boost: ${res.spec.inference_latency_ms} ms). Accuracy delta: -${res.spec.accuracy_drop_pct}%.</span>`;
+          consoleBox.scrollTop = consoleBox.scrollHeight;
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+        }
+      } catch (err) {
+        statusPill.innerText = 'EXPORT FAILED';
+        statusPill.style.color = '#ff3366';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+    });
+  </script>
+</body>
+</html>

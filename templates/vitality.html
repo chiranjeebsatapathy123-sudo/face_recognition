@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // AI Vitality, Fatigue & Emotion Telemetry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .vitality-container {
+      padding: 20px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .vitality-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .kpi-card {
+      background: rgba(10, 15, 26, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 18px 22px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .kpi-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .kpi-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .vitality-main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .chart-panel {
+      background: rgba(10, 15, 26, 0.95);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-hdr {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      color: #00f3ff;
+      border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .live-vitality-hud {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    .cam-hud-box {
+      width: 240px;
+      height: 220px;
+      background: #040711;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hud-oval {
+      width: 110px;
+      height: 145px;
+      border: 2px dashed #00ff88;
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+      position: relative;
+      animation: pulseOval 2s infinite ease-in-out;
+    }
+    .hud-crosshair {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background: linear-gradient(rgba(0,243,255,0.05) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0,243,255,0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .meter-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .roster-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .roster-table th, .roster-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    .roster-table th {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      color: #00f3ff;
+      background: rgba(0, 243, 255, 0.06);
+    }
+    .affect-pill {
+      display: inline-block;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Reusable Two-Tier Header -->
+  {% set active_page = 'vitality' %}
+  {% set nav_icon = '🧠' %}
+  {% set nav_title = 'NEXUS BIOMETRICS // AI VITALITY & COGNITIVE TELEMETRY' %}
+  {% set nav_subtitle = 'FACIAL MICRO-EXPRESSION DYNAMICS, EYE BLINK FATIGUE & WORKFORCE ERGONOMIC WELLNESS' %}
+  {% include 'nav_header.html' %}
+
+  <main class="vitality-container">
+    <!-- Top KPI Overview Strip -->
+    <div class="vitality-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">AVG FACILITY FOCUS</div>
+        <div class="kpi-num" style="color:#00ff88;">{{ vitality.overview.avg_facility_focus }}%</div>
+        <div class="kpi-sub">Attention & engagement index</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">AVG FACILITY FATIGUE</div>
+        <div class="kpi-num" style="color:{{ '#00ff88' if vitality.overview.avg_facility_fatigue < 40 else '#f59e0b' }};">{{ vitality.overview.avg_facility_fatigue }}%</div>
+        <div class="kpi-sub">Eye aspect ratio & blink rate metric</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">OPTIMAL STATUS COHORT</div>
+        <div class="kpi-num" style="color:#00f3ff;">{{ vitality.overview.optimal_status_pct }}%</div>
+        <div class="kpi-sub">Low-fatigue & high-alert personnel</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">ERGONOMIC ADVISORY</div>
+        <div class="kpi-num" style="font-size:1.15rem; color:#f59e0b;">
+          {% if vitality.recommendations %}{{ vitality.recommendations|length }} ACTIVE{% else %}NOMINAL{% endif %}
+        </div>
+        <div class="kpi-sub">Automated wellness triggers</div>
+      </div>
+    </div>
+
+    <!-- Recommendations Alert if any -->
+    {% if vitality.recommendations %}
+    <div style="background:rgba(245, 158, 11, 0.12); border:1px solid #f59e0b; border-radius:6px; padding:12px 20px; font-family:'Orbitron',monospace; font-size:0.8rem; color:#f59e0b; display:flex; align-items:center; gap:12px;">
+      <span style="font-size:1.2rem;">⚠️</span>
+      <span><strong>ERGONOMIC ADVISORY:</strong> {{ vitality.recommendations[0].message }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Main Grid: Radar Chart + Live Micro-Expression HUD -->
+    <div class="vitality-main-grid">
+      <!-- Radar Chart: Department Vitality Indices -->
+      <div class="chart-panel">
+        <div class="panel-hdr">
+          <span>◈ DEPARTMENT VITALITY MULTI-AXIS RADAR</span>
+          <span style="font-size:0.7rem; color:#94a3b8; font-family:'Rajdhani',sans-serif;">FOCUS vs FATIGUE vs COGNITIVE LOAD</span>
+        </div>
+        <div style="flex:1; position:relative; min-height:280px;">
+          <canvas id="deptRadarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Live Optical Vitality HUD Scanner -->
+      <div class="chart-panel">
+        <div class="panel-hdr">
+          <span>👁️ REAL-TIME FACIAL VITALITY HUD</span>
+          <span style="font-size:0.7rem; color:#00ff88;">AUTONOMOUS TRACKING</span>
+        </div>
+        <div class="live-vitality-hud">
+          <div class="cam-hud-box">
+            <div class="hud-crosshair"></div>
+            <div class="hud-oval"></div>
+            <div style="position:absolute; bottom:8px; font-family:'Orbitron',monospace; font-size:0.65rem; color:#00f3ff; letter-spacing:1px; background:rgba(0,0,0,0.7); padding:2px 8px; border-radius:3px;">
+              SUBJECT: CHIRU
+            </div>
+          </div>
+          <div>
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                <span style="color:#94a3b8;">Focus & Engagement</span>
+                <span style="color:#00ff88; font-family:'Orbitron',monospace;">88.5%</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" style="width: 88.5%; background:#00ff88;"></div></div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                <span style="color:#94a3b8;">Blink Frequency (EAR 0.31)</span>
+                <span style="color:#00f3ff; font-family:'Orbitron',monospace;">16.4 / min</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" style="width: 45%; background:#00f3ff;"></div></div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                <span style="color:#94a3b8;">Fatigue / Drowsiness Index</span>
+                <span style="color:#f59e0b; font-family:'Orbitron',monospace;">24.2%</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" style="width: 24.2%; background:#f59e0b;"></div></div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                <span style="color:#94a3b8;">Head Orientation Stability</span>
+                <span style="color:#00ff88; font-family:'Orbitron',monospace;">97.1%</span>
+              </div>
+              <div class="meter-bar"><div class="meter-fill" style="width: 97.1%; background:#00ff88;"></div></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.1);">
+              <span style="font-size:0.78rem; color:#94a3b8;">Primary Affect State:</span>
+              <span class="affect-pill" style="background:rgba(0,255,136,0.15); border:1px solid #00ff88; color:#00ff88;">
+                DEEP FOCUS & ALERT
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personnel Vitality Roster Table -->
+    <div class="chart-panel">
+      <div class="panel-hdr">
+        <span>◈ INDIVIDUAL PERSONNEL VITALITY & COGNITIVE TELEMETRY</span>
+        <span style="font-size:0.7rem; color:#94a3b8;">AI FACIAL LANDMARKS & TEMPORAL BLINK TRACKING</span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Personnel</th>
+              <th>Department / Cohort</th>
+              <th>Clearance</th>
+              <th>Focus Score</th>
+              <th>Fatigue Index</th>
+              <th>Blink Rate</th>
+              <th>Cognitive Load</th>
+              <th>Current Affect</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in vitality.personnel %}
+            <tr>
+              <td>
+                <strong style="color:#fff;">{{ p.name }}</strong>
+                <div style="font-size:0.75rem; color:#94a3b8;">{{ p.role }}</div>
+              </td>
+              <td>{{ p.department }} ({{ p.user_type }})</td>
+              <td>
+                <span style="font-family:'Orbitron',monospace; font-size:0.72rem; color:{{ '#ffb700' if p.clearance=='VIP' else ('#ff3366' if p.clearance=='BANNED' else '#00f3ff') }};">
+                  {{ p.clearance }}
+                </span>
+              </td>
+              <td>
+                <span style="font-family:'Orbitron',monospace; color:#00ff88;">{{ p.focus_score }}%</span>
+                <div class="meter-bar" style="width:90px;"><div class="meter-fill" style="width:{{ p.focus_score }}%; background:#00ff88;"></div></div>
+              </td>
+              <td>
+                <span style="font-family:'Orbitron',monospace; color:{{ '#ff3366' if p.fatigue_index > 65 else ('#f59e0b' if p.fatigue_index > 40 else '#00ff88') }};">
+                  {{ p.fatigue_index }}%
+                </span>
+                <div class="meter-bar" style="width:90px;"><div class="meter-fill" style="width:{{ p.fatigue_index }}%; background:{{ '#ff3366' if p.fatigue_index > 65 else ('#f59e0b' if p.fatigue_index > 40 else '#00ff88') }};"></div></div>
+              </td>
+              <td>
+                <span style="font-family:'Orbitron',monospace; color:#cbd5e1;">{{ p.blink_rate }} / min</span>
+                <div style="font-size:0.7rem; color:#64748b;">EAR: {{ p.ear }}</div>
+              </td>
+              <td>
+                <span style="font-family:'Orbitron',monospace; color:#38bdf8;">{{ p.cognitive_load }}%</span>
+              </td>
+              <td>
+                <span class="affect-pill" style="background:rgba(255,255,255,0.05); border:1px solid {{ p.affect_color }}; color:{{ p.affect_color }};">
+                  {{ p.affect }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Department Vitality Radar Chart
+    const deptData = {{ vitality.departments | tojson }};
+    const ctxRadar = document.getElementById('deptRadarChart').getContext('2d');
+
+    const labels = deptData.map(d => d.department);
+    const focusData = deptData.map(d => d.avg_focus);
+    const fatigueData = deptData.map(d => d.avg_fatigue);
+    const cogData = deptData.map(d => d.avg_cognitive);
+
+    new Chart(ctxRadar, {
+      type: 'radar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Avg Focus (%)',
+            data: focusData,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.2)',
+            pointBackgroundColor: '#00ff88',
+            borderWidth: 2
+          },
+          {
+            label: 'Avg Fatigue (%)',
+            data: fatigueData,
+            borderColor: '#ff3366',
+            backgroundColor: 'rgba(255, 51, 102, 0.2)',
+            pointBackgroundColor: '#ff3366',
+            borderWidth: 2
+          },
+          {
+            label: 'Cognitive Load (%)',
+            data: cogData,
+            borderColor: '#00f3ff',
+            backgroundColor: 'rgba(0, 243, 255, 0.15)',
+            pointBackgroundColor: '#00f3ff',
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+            grid: { color: 'rgba(0, 243, 255, 0.15)' },
+            pointLabels: {
+              color: '#e2e8f0',
+              font: { family: 'Orbitron', size: 11 }
+            },
+            ticks: {
+              backdropColor: 'transparent',
+              color: '#94a3b8',
+              stepSize: 20
+            },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#cbd5e1',
+              font: { family: 'Rajdhani', size: 12 }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

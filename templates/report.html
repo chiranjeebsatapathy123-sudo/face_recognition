@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Attendance Audit Report // NEXUS 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .cyber-scanlines, .hud-background-grid, .no-print {
+        display: none !important;
+      }
+      .cyber-header {
+        background: none !important;
+        border-bottom: 2px solid #000 !important;
+        box-shadow: none !important;
+        padding: 10px 0 !important;
+      }
+      .cyber-panel {
+        background: none !important;
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+      }
+      .report-card, .metric-card {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #000 !important;
+      }
+      .metric-val {
+        color: #000 !important;
+      }
+      .cyber-table th {
+        background: #f1f5f9 !important;
+        color: #000 !important;
+        border-bottom: 2px solid #94a3b8 !important;
+      }
+      .cyber-table td {
+        border-bottom: 1px solid #e2e8f0 !important;
+        color: #1e293b !important;
+      }
+      .badge.student, .badge.office, .badge.ontimed, .badge.late {
+        border: 1px solid #94a3b8 !important;
+        color: #000 !important;
+        background: none !important;
+      }
+      .signature-block {
+        display: flex !important;
+      }
+    }
+    .report-header-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .print-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .signature-block {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+    }
+    .sig-line {
+      width: 240px;
+      border-top: 1px solid var(--border-cyan);
+      text-align: center;
+      padding-top: 8px;
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <div class="no-print">
+    {% set active_page = 'report' %}
+    {% set nav_icon = '📜' %}
+    {% set nav_title = 'CERTIFIED DAILY AUDIT REPORT // COMPLIANCE DIGEST' %}
+    {% set nav_subtitle = 'EXECUTIVE ATTENDANCE DIGEST, OVERTIME CALCULATIONS & COMPLIANCE ARCHIVE' %}
+    {% include 'nav_header.html' %}
+  </div>
+
+  <main class="main-container">
+    <div class="report-header-banner">
+      <div>
+        <h2 style="font-family:var(--font-tech); letter-spacing:2px; font-size:1.4rem;">DAILY BIOMETRIC ATTENDANCE RECORD</h2>
+        <p style="color:var(--neon-cyan); letter-spacing:1px; font-weight:600;">DATE OF AUDIT: {{ report.date }} // NEXUS BIOMETRIC AI v3.5</p>
+      </div>
+      <div class="print-actions no-print">
+        <button onclick="window.print()" class="cyber-button primary">🖨️ Print / Save PDF Report</button>
+        <a href="/api/export_csv" class="cyber-button secondary">Export Raw CSV</a>
+      </div>
+    </div>
+
+    <!-- Executive Summary KPIs -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">TOTAL STRENGTH</div>
+        <div class="metric-val">{{ report.summary.total_strength }}</div>
+        <div class="metric-sub">Registered Staff & Students</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">PRESENT TODAY</div>
+        <div class="metric-val">{{ report.summary.present_count }}</div>
+        <div class="metric-sub">Rate: {{ report.summary.attendance_rate }}%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">ABSENT COUNT</div>
+        <div class="metric-val text-alert">{{ report.summary.absent_count }}</div>
+        <div class="metric-sub">Unverified profiles</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">ON-TIME ARRIVALS</div>
+        <div class="metric-val" style="color:var(--neon-green)">{{ report.summary.on_time_count }}</div>
+        <div class="metric-sub">Late Arrivals: {{ report.summary.late_count }}</div>
+      </div>
+    </section>
+
+    <!-- Present Roster Table -->
+    <section class="cyber-panel" style="margin-bottom: 24px;">
+      <div class="panel-header">
+        <div class="panel-title"><span class="bracket">[</span> PRESENT ATTENDANCE ROSTER ({{ report.present_roster|length }}) <span class="bracket">]</span></div>
+        <div class="panel-badge neon-green">VERIFIED BIOMETRIC LOG</div>
+      </div>
+      <div class="feed-table-container">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>PROOF</th>
+              <th>NAME</th>
+              <th>COHORT</th>
+              <th>ID / ROLL</th>
+              <th>DEPARTMENT / CLASS</th>
+              <th>FIRST IN</th>
+              <th>LAST OUT</th>
+              <th>DURATION</th>
+              <th>OVERTIME</th>
+              <th>PUNCTUALITY</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in report.present_roster %}
+            <tr>
+              <td>
+                {% if p.snapshot_url %}
+                  <img src="{{ p.snapshot_url }}" class="punch-thumb" alt="Proof" title="Verified Biometric Snapshot">
+                {% else %}
+                  <div class="avatar-ring small">👤</div>
+                {% endif %}
+              </td>
+              <td class="user-cell"><strong>{{ p.name }}</strong></td>
+              <td>
+                <span class="badge {% if p.user_type == 'Student' %}student{% else %}office{% endif %}">
+                  {{ p.user_type }}
+                </span>
+              </td>
+              <td>{{ p.emp_id or '-' }}</td>
+              <td>{{ p.department }}</td>
+              <td><strong>{{ p.first_in }}</strong></td>
+              <td>{{ p.last_out }}</td>
+              <td><span style="color:var(--neon-cyan); font-weight:600;">{{ p.duration }}</span></td>
+              <td>
+                {% if p.overtime != '-' %}
+                  <span class="badge ontimed">{{ p.overtime }}</span>
+                {% else %}
+                  <span class="text-dim">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.is_late %}
+                  <span class="badge late">LATE ARRIVAL</span>
+                {% else %}
+                  <span class="badge ontimed">ON TIME</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="no-records">No attendance check-ins recorded for this date.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Absentee Table -->
+    {% if report.absent_roster %}
+    <section class="cyber-panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="bracket">[</span> ABSENTEE ROSTER ({{ report.absent_roster|length }}) <span class="bracket">]</span></div>
+        <div class="panel-badge" style="border-color:var(--neon-red); color:var(--neon-red);">ACTION REQUIRED</div>
+      </div>
+      <div class="feed-table-container">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>NAME</th>
+              <th>COHORT</th>
+              <th>ID / ROLL</th>
+              <th>DEPARTMENT / CLASS</th>
+              <th>OFFICIAL CONTACT EMAIL</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in report.absent_roster %}
+            <tr>
+              <td class="user-cell"><strong>{{ a.name }}</strong></td>
+              <td>
+                <span class="badge {% if a.user_type == 'Student' %}student{% else %}office{% endif %}">
+                  {{ a.user_type }}
+                </span>
+              </td>
+              <td>{{ a.emp_id or '-' }}</td>
+              <td>{{ a.department }}</td>
+              <td class="text-dim">{{ a.email or 'N/A' }}</td>
+              <td><span class="badge late">ABSENT</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Formal Sign-Off Blocks for Print -->
+    <div class="signature-block">
+      <div class="sig-line">
+        AUTHORIZED SUPERVISOR / DEAN<br>
+        <span style="font-size:0.65rem; color:#94a3b8;">Signature & Date</span>
+      </div>
+      <div class="sig-line">
+        BIOMETRIC AI SYSTEM OPERATOR<br>
+        <span style="font-size:0.65rem; color:#94a3b8;">Digital Audit Stamp</span>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

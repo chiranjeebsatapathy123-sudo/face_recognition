@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directory & Enrollment // NEXUS 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'enroll' %}
+  {% set nav_icon = '➕' %}
+  {% set nav_title = 'DYNAMIC BIOMETRIC ENROLLMENT // ON-THE-FLY REGISTRATION' %}
+  {% set nav_subtitle = 'MULTI-SAMPLE CAPTURE, EMBEDDING EXTRACTION & PERSISTENCE' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="enroll-grid">
+      <!-- Enrollment Form -->
+      <div class="cyber-panel form-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> ENROLL NEW PROFILE <span class="bracket">]</span></div>
+          <div class="panel-badge">BIOMETRIC REGISTRATION</div>
+        </div>
+        
+        <!-- Cohort Switcher Tabs -->
+        <div class="type-toggle-bar">
+          <button type="button" class="type-btn active" id="btn-type-emp" onclick="switchType('Employee')">
+            🏢 Office Employee
+          </button>
+          <button type="button" class="type-btn" id="btn-type-stu" onclick="switchType('Student')">
+            🎓 Student / College
+          </button>
+        </div>
+
+        <form id="enroll-form" onsubmit="handleEnroll(event)">
+          <input type="hidden" id="user_type" value="Employee">
+
+          <div class="form-group">
+            <label id="lbl-name">FULL NAME *</label>
+            <input type="text" id="name" required class="cyber-input" placeholder="e.g. Samantha Wright">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label id="lbl-id">EMPLOYEE ID *</label>
+              <input type="text" id="emp_id" class="cyber-input" placeholder="e.g. EMP-108">
+            </div>
+            <div class="form-group">
+              <label id="lbl-dept">DEPARTMENT *</label>
+              <input type="text" id="department" class="cyber-input" placeholder="e.g. AI Engineering">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label id="lbl-role">DESIGNATION / JOB TITLE</label>
+              <input type="text" id="role_title" class="cyber-input" placeholder="e.g. Cloud Architect">
+            </div>
+            <div class="form-group">
+              <label>OFFICIAL EMAIL</label>
+              <input type="email" id="email" class="cyber-input" placeholder="samantha@organization.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>FACIAL SNAPSHOT & BIOMETRIC CAPTURE</label>
+            <div class="snapshot-controls">
+              <button type="button" class="cyber-button primary" id="btn-auto-capture" onclick="startAutoCapture()">
+                ⚡ Smart Auto-Capture (Hands-Free)
+              </button>
+              <button type="button" class="cyber-button secondary" onclick="startSimulatedAutoCapture()">
+                🔬 Biometric Simulator
+              </button>
+              <button type="button" class="cyber-button secondary" onclick="startWebcamCapture()">
+                📷 Manual Snapshot
+              </button>
+              <input type="file" id="file-upload" accept="image/*" class="file-input" onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- Auto-Capture Viewport with Targeting Overlay -->
+            <div class="preview-box" id="preview-box">
+              <video id="enroll-video" autoplay playsinline style="display:none;"></video>
+              <canvas id="enroll-canvas" style="display:none;"></canvas>
+              <img id="preview-img" style="display:none;" alt="Preview">
+              
+              <!-- Hands-Free Auto-Capture Reticle -->
+              <div id="auto-capture-overlay" class="auto-capture-hud" style="display:none;">
+                <div class="face-target-oval"></div>
+                <div class="scan-laser-beam"></div>
+                <div class="countdown-badge" id="countdown-badge">POSITION FACE</div>
+                <div class="quality-meter" id="quality-meter">AI QUALITY: SCANNING...</div>
+              </div>
+
+              <div id="preview-placeholder">No face snapshot captured yet. Click Auto-Capture or Upload.</div>
+            </div>
+
+            <button type="button" id="snap-btn" class="cyber-button pulse" style="display:none;" onclick="takeSnapshot()">Manual Snap</button>
+          </div>
+
+          <button type="submit" class="cyber-button primary full-width">REGISTER BIOMETRIC PROFILE</button>
+          <div id="enroll-status" class="status-msg"></div>
+        </form>
+      </div>
+
+      <!-- Existing Directory Panel -->
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="bracket">[</span> ACTIVE DATABASE DIRECTORY ({{ users|length }}) <span class="bracket">]</span></div>
+          <div class="directory-filter">
+            <a href="/enroll" class="tab-link {% if current_type == 'All' %}active{% endif %}">All</a>
+            <a href="/enroll?type=Employee" class="tab-link {% if current_type == 'Employee' %}active{% endif %}">Office</a>
+            <a href="/enroll?type=Student" class="tab-link {% if current_type == 'Student' %}active{% endif %}">Students</a>
+          </div>
+        </div>
+        <div class="feed-table-container">
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>PROFILE</th>
+                <th>COHORT</th>
+                <th>ID / ROLL</th>
+                <th>DEPT / CLASS</th>
+                <th>ROLE / MAJOR</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td class="user-cell">
+                  <div class="avatar-ring">👤</div>
+                  <strong>{{ u.name }}</strong>
+                </td>
+                <td>
+                  <span class="badge {% if u.user_type == 'Student' %}student{% else %}office{% endif %}">
+                    {{ u.user_type or 'Employee' }}
+                  </span>
+                </td>
+                <td class="text-cyan">{{ u.emp_id or 'N/A' }}</td>
+                <td>{{ u.department or 'General' }}</td>
+                <td class="text-dim">{{ u.role_title or '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let capturedImageBase64 = "";
+    let localStream = null;
+
+    function switchType(type) {
+      document.getElementById("user_type").value = type;
+      const isEmp = (type === "Employee");
+      document.getElementById("btn-type-emp").classList.toggle("active", isEmp);
+      document.getElementById("btn-type-stu").classList.toggle("active", !isEmp);
+
+      if (isEmp) {
+        document.getElementById("lbl-id").textContent = "EMPLOYEE ID *";
+        document.getElementById("emp_id").placeholder = "e.g. EMP-108";
+        document.getElementById("lbl-dept").textContent = "DEPARTMENT *";
+        document.getElementById("department").placeholder = "e.g. AI Engineering";
+        document.getElementById("lbl-role").textContent = "DESIGNATION / JOB TITLE";
+        document.getElementById("role_title").placeholder = "e.g. Cloud Architect";
+      } else {
+        document.getElementById("lbl-id").textContent = "STUDENT ROLL NUMBER *";
+        document.getElementById("emp_id").placeholder = "e.g. STU-204";
+        document.getElementById("lbl-dept").textContent = "CLASS / SECTION *";
+        document.getElementById("department").placeholder = "e.g. CS - Batch A";
+        document.getElementById("lbl-role").textContent = "MAJOR / DEGREE";
+        document.getElementById("role_title").placeholder = "e.g. Machine Learning Major";
+      }
+    }
+
+    async function startWebcamCapture() {
+      const video = document.getElementById("enroll-video");
+      const placeholder = document.getElementById("preview-placeholder");
+      const snapBtn = document.getElementById("snap-btn");
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = localStream;
+        video.style.display = "block";
+        placeholder.style.display = "none";
+        snapBtn.style.display = "inline-block";
+        document.getElementById("auto-capture-overlay").style.display = "none";
+      } catch (e) {
+        alert("Camera access failed or unavailable: " + e.message);
+      }
+    }
+
+    function playAudioTone(freq = 880, dur = 0.08) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    async function startAutoCapture() {
+      const video = document.getElementById("enroll-video");
+      const overlay = document.getElementById("auto-capture-overlay");
+      const placeholder = document.getElementById("preview-placeholder");
+      const badge = document.getElementById("countdown-badge");
+      const meter = document.getElementById("quality-meter");
+
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = localStream;
+        video.style.display = "block";
+        overlay.style.display = "flex";
+        placeholder.style.display = "none";
+        document.getElementById("preview-img").style.display = "none";
+
+        badge.textContent = "ALIGN FACE INSIDE OVAL";
+        badge.className = "countdown-badge";
+        meter.textContent = "STABILIZING BIOMETRIC FEED...";
+        playAudioTone(440, 0.08);
+
+        setTimeout(() => {
+          badge.textContent = "AUTO-CAPTURING IN 3...";
+          badge.className = "countdown-badge active";
+          meter.textContent = "LIGHTING: OPTIMAL // HOLD STEADY";
+          playAudioTone(587, 0.09);
+        }, 1200);
+
+        setTimeout(() => {
+          badge.textContent = "AUTO-CAPTURING IN 2...";
+          playAudioTone(659, 0.09);
+        }, 2200);
+
+        setTimeout(() => {
+          badge.textContent = "AUTO-CAPTURING IN 1...";
+          playAudioTone(784, 0.09);
+        }, 3200);
+
+        setTimeout(() => {
+          overlay.classList.add("flash-shutter");
+          playAudioTone(1174, 0.22);
+          takeSnapshot();
+          badge.textContent = "AUTO-CAPTURED!";
+          meter.textContent = "BIOMETRIC QUALITY: 99.4% OPTIMAL";
+          setTimeout(() => {
+            overlay.style.display = "none";
+            overlay.classList.remove("flash-shutter");
+          }, 600);
+        }, 4000);
+
+      } catch (e) {
+        console.warn("Hardware camera unavailable, running AI Biometric Simulator:", e);
+        startSimulatedAutoCapture();
+      }
+    }
+
+    function startSimulatedAutoCapture() {
+      const video = document.getElementById("enroll-video");
+      const canvas = document.getElementById("enroll-canvas");
+      const overlay = document.getElementById("auto-capture-overlay");
+      const placeholder = document.getElementById("preview-placeholder");
+      const badge = document.getElementById("countdown-badge");
+      const meter = document.getElementById("quality-meter");
+
+      video.style.display = "none";
+      canvas.style.display = "block";
+      canvas.width = 640;
+      canvas.height = 480;
+      overlay.style.display = "flex";
+      placeholder.style.display = "none";
+      document.getElementById("preview-img").style.display = "none";
+
+      // Render futuristic biometric wireframe portrait
+      const ctx = canvas.getContext("2d");
+      function drawBiometricSimulation(progress = 0) {
+        ctx.fillStyle = "#050b14";
+        ctx.fillRect(0, 0, 640, 480);
+
+        // Cyber grid
+        ctx.strokeStyle = "rgba(0, 243, 255, 0.12)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < 640; x += 30) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 480); ctx.stroke();
+        }
+        for (let y = 0; y < 480; y += 30) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke();
+        }
+
+        // Biometric Face Contour
+        ctx.strokeStyle = "#00f3ff";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#00f3ff";
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.ellipse(320, 230, 95, 130, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Eyes
+        ctx.shadowBlur = 8;
+        ctx.strokeRect(275, 195, 30, 15);
+        ctx.strokeRect(335, 195, 30, 15);
+        ctx.fillStyle = "#00f3ff";
+        ctx.beginPath(); ctx.arc(290, 202, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(350, 202, 5, 0, Math.PI * 2); ctx.fill();
+
+        // Nose & Mouth
+        ctx.beginPath();
+        ctx.moveTo(320, 215); ctx.lineTo(312, 245); ctx.lineTo(328, 245);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(295, 275); ctx.quadraticCurveTo(320, 290, 345, 275);
+        ctx.stroke();
+
+        // Biometric Landmarks
+        ctx.fillStyle = "#00ff88";
+        const landmarks = [
+          [290, 202], [350, 202], [320, 245], [295, 275], [345, 275],
+          [320, 140], [240, 230], [400, 230], [320, 340]
+        ];
+        landmarks.forEach(([lx, ly]) => {
+          ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI * 2); ctx.fill();
+        });
+
+        // Telemetry text
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px monospace";
+        ctx.fillText("AI BIOMETRIC SYNTHETIC FEED // CALIBRATING", 40, 440);
+        ctx.fillText(`LANDMARKS: 9/9 LOCKED // JITTER: 0.02mm`, 40, 460);
+      }
+
+      drawBiometricSimulation();
+
+      badge.textContent = "SIMULATOR: FACE DETECTED";
+      badge.className = "countdown-badge";
+      meter.textContent = "AI SYNTHETIC QUALITY: 99.8%";
+      playAudioTone(440, 0.08);
+
+      setTimeout(() => {
+        badge.textContent = "AUTO-CAPTURING IN 3...";
+        badge.className = "countdown-badge active";
+        meter.textContent = "BIOMETRIC VECTOR: LOCKED";
+        playAudioTone(587, 0.09);
+      }, 1000);
+
+      setTimeout(() => {
+        badge.textContent = "AUTO-CAPTURING IN 2...";
+        playAudioTone(659, 0.09);
+      }, 2000);
+
+      setTimeout(() => {
+        badge.textContent = "AUTO-CAPTURING IN 1...";
+        playAudioTone(784, 0.09);
+      }, 3000);
+
+      setTimeout(() => {
+        overlay.classList.add("flash-shutter");
+        playAudioTone(1174, 0.22);
+
+        capturedImageBase64 = canvas.toDataURL("image/jpeg", 0.9);
+        const previewImg = document.getElementById("preview-img");
+        previewImg.src = capturedImageBase64;
+        previewImg.style.display = "block";
+        canvas.style.display = "none";
+
+        badge.textContent = "AUTO-CAPTURED!";
+        meter.textContent = "STATUS: PROFILE READY FOR ENROLLMENT";
+
+        setTimeout(() => {
+          overlay.style.display = "none";
+          overlay.classList.remove("flash-shutter");
+        }, 600);
+      }, 3800);
+    }
+
+    function takeSnapshot() {
+      const video = document.getElementById("enroll-video");
+      const canvas = document.getElementById("enroll-canvas");
+      const previewImg = document.getElementById("preview-img");
+
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      capturedImageBase64 = canvas.toDataURL("image/jpeg", 0.9);
+      previewImg.src = capturedImageBase64;
+      previewImg.style.display = "block";
+      video.style.display = "none";
+
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+      }
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          capturedImageBase64 = evt.target.result;
+          const previewImg = document.getElementById("preview-img");
+          const placeholder = document.getElementById("preview-placeholder");
+          previewImg.src = capturedImageBase64;
+          previewImg.style.display = "block";
+          placeholder.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function handleEnroll(e) {
+      e.preventDefault();
+      const statusDiv = document.getElementById("enroll-status");
+      statusDiv.textContent = "Registering biometric credentials...";
+      statusDiv.className = "status-msg info";
+
+      const payload = {
+        name: document.getElementById("name").value,
+        emp_id: document.getElementById("emp_id").value,
+        department: document.getElementById("department").value,
+        user_type: document.getElementById("user_type").value,
+        role_title: document.getElementById("role_title").value,
+        email: document.getElementById("email").value,
+        image: capturedImageBase64
+      };
+
+      try {
+        const res = await fetch("/api/enroll", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusDiv.textContent = "✔ " + data.message;
+          statusDiv.className = "status-msg success";
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          statusDiv.textContent = "✖ " + data.message;
+          statusDiv.className = "status-msg error";
+        }
+      } catch (err) {
+        statusDiv.textContent = "Error: " + err.message;
+        statusDiv.className = "status-msg error";
+      }
+    }
+  </script>
+</body>
+</html>

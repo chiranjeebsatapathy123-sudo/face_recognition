@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER-ATTENDANCE 3D // Biometric Intelligence</title>
+  <!-- Three.js CDN for 3D Holographic Rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Chart.js for Futuristic Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Orbitron & Rajdhani -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'live' %}
+  {% set nav_icon = '◈' %}
+  {% set nav_title = 'NEXUS // BIOMETRIC 3D ATTENDANCE' %}
+  {% set nav_subtitle = 'AUTONOMOUS FACIAL RECOGNITION & MOTION HUD ENGINE' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <!-- Telemetry Stats Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">TOTAL REGISTERED</div>
+        <div class="metric-val" id="total-users">{{ stats.total_users }}</div>
+        <div class="metric-sub">Office & Students Combined</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">OFFICE STAFF TODAY</div>
+        <div class="metric-val" id="present-office">{{ stats.present_employees }} / {{ stats.total_employees }}</div>
+        <div class="metric-sub">Corporate Roster</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">STUDENTS PRESENT</div>
+        <div class="metric-val" id="present-students">{{ stats.present_students }} / {{ stats.total_students }}</div>
+        <div class="metric-sub">Academic Cohort</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">LATE ARRIVALS TODAY</div>
+        <div class="metric-val text-alert" id="late-count">{{ stats.late_count_today }}</div>
+        <div class="metric-sub">Cutoff: 09:30 AM</div>
+      </div>
+    </section>
+
+    <!-- Main Dual Monitor Section -->
+    <div class="workspace-grid">
+      <!-- Left: Camera Video Stream with HUD -->
+      <div class="cyber-panel stream-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> LIVE CAMERA FEED & 3D MOTION HUD <span class="bracket">]</span>
+          </div>
+          <div class="panel-badge" id="cam-active-badge">SOURCE: {{ cam_mode|upper }}</div>
+        </div>
+
+        <!-- Camera Source Switcher -->
+        <div class="cam-source-bar">
+          <label>FEED INPUT:</label>
+          <select id="cam-source-select" class="cyber-select" onchange="onSourceChange(this.value)">
+            <option value="0" {% if cam_mode == 'webcam' %}selected{% endif %}>📷 USB / Default Webcam (0)</option>
+            <option value="simulated" {% if cam_mode == 'simulated' %}selected{% endif %}>🤖 High-Tech Cyber Simulator</option>
+            <option value="ipcam" {% if cam_mode == 'ipcam' %}selected{% endif %}>🌐 Phone / IP Webcam (HTTP Stream)</option>
+          </select>
+          <div id="ipcam-input-wrap" style="display:none;">
+            <input type="text" id="ipcam-url" class="cyber-input small" placeholder="http://100.71.51.221:8080/shot.jpg" value="http://100.71.51.221:8080/shot.jpg">
+            <button class="cyber-button secondary small" onclick="connectIpCam()">Connect</button>
+          </div>
+        </div>
+
+        <!-- Biometric Walk-Up Tester Toolbar -->
+        <div class="walkup-tester-bar">
+          <label>🧪 WALK-UP TESTER:</label>
+          <select id="sim-subject-select" class="cyber-select small">
+            {% for u in users %}
+              <option value="{{ u.name }}">{{ u.name }} ({{ u.user_type }})</option>
+            {% endfor %}
+            <option value="Unknown Intruder">🚨 Unknown Intruder (Security Breach)</option>
+          </select>
+          <button class="cyber-button primary small" onclick="triggerWalkUpTest()">🚶 Simulate Walk-Up & Punch</button>
+          <a href="/qrscan" class="cyber-button secondary small">🪪 2FA Gate</a>
+        </div>
+
+        <div class="stream-viewport">
+          <img src="/video_feed" alt="Live Stream" class="video-stream" id="video-stream-img">
+          <div class="viewport-overlay-decorations">
+            <div class="cam-crosshair"></div>
+          </div>
+        </div>
+
+        <!-- Interactive HUD Controls -->
+        <div class="hud-controls-toolbar">
+          <span class="toolbar-label">HUD TOGGLES:</span>
+          <button class="toggle-btn active" id="btn-toggle-cube" onclick="toggleHudElement('cube')">
+            <span class="dot"></span> 3D Isometric Cube
+          </button>
+          <button class="toggle-btn active" id="btn-toggle-mesh" onclick="toggleHudElement('mesh')">
+            <span class="dot"></span> Biometric Mesh
+          </button>
+          <button class="toggle-btn active" id="btn-toggle-reticle" onclick="toggleHudElement('reticle')">
+            <span class="dot"></span> Rotating Reticles
+          </button>
+          <button class="toggle-btn active" id="btn-toggle-laser" onclick="toggleHudElement('laser')">
+            <span class="dot"></span> Laser Sweep
+          </button>
+
+          <div class="theme-switcher-box">
+            <span class="toolbar-label">COLOR:</span>
+            <button class="theme-dot cyan active" onclick="switchTheme('cyan')" title="Neon Cyan"></button>
+            <button class="theme-dot matrix" onclick="switchTheme('matrix')" title="Matrix Green"></button>
+            <button class="theme-dot synthwave" onclick="switchTheme('synthwave')" title="Synthwave Magenta"></button>
+            <button class="theme-dot amber" onclick="switchTheme('amber')" title="Solar Gold"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Three.js 3D Holographic Cyber Face -->
+      <div class="cyber-panel hologram-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> 3D HOLOGRAPHIC BIOMETRIC FACIAL MESH <span class="bracket">]</span>
+          </div>
+          <div class="panel-badge neon-green">INTERACTIVE WEBGL</div>
+        </div>
+        <div class="hologram-viewport" id="three-container">
+          <div class="hologram-overlay-info">
+            <div class="holo-stat">TARGET: <span id="holo-target">TRACKING ACTIVE</span></div>
+            <div class="holo-stat">PITCH/YAW: <span id="holo-coords">0.0° / 0.0°</span></div>
+            <div class="holo-instruction">Interact with Mouse to Rotate 3D Model</div>
+          </div>
+        </div>
+        <div class="hologram-legend">
+          <div class="legend-item"><span class="legend-color cyan"></span> Scanning Point Cloud</div>
+          <div class="legend-item"><span class="legend-color green"></span> Verified Landmark Nodes</div>
+          <div class="legend-item"><span class="legend-color purple"></span> 3D Holographic Plane</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts Section -->
+    <section class="analytics-charts-grid">
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> HOURLY ARRIVAL TIMELINE <span class="bracket">]</span>
+          </div>
+          <div class="panel-badge">PEAK DISTRIBUTION</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="hourly-chart"></canvas>
+        </div>
+      </div>
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> DEPARTMENT ATTENDANCE BREAKDOWN <span class="bracket">]</span>
+          </div>
+          <div class="panel-badge neon-green">CROSS-GROUP METRICS</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="dept-chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXUS Holographic AI Natural Language Query Assistant -->
+    <section class="cyber-panel assistant-panel" style="margin-bottom: 24px;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="bracket">[</span> NEXUS AI BIOMETRIC VOICE ASSISTANT <span class="bracket">]</span>
+        </div>
+        <div class="panel-badge neon-green">NATURAL LANGUAGE INTELLIGENCE</div>
+      </div>
+      <div class="assistant-content">
+        <div class="assistant-input-wrap">
+          <span class="assistant-icon">🤖</span>
+          <input type="text" id="assistant-query-input" class="cyber-input" placeholder="Ask anything: 'Who is late today?', 'Is Chiru present?', 'How many students here?'..." onkeydown="if(event.key==='Enter') submitAssistantQuery()">
+          <button class="cyber-button primary" onclick="submitAssistantQuery()">Ask NEXUS</button>
+          <button class="cyber-button secondary" id="btn-assistant-mic" onclick="startAssistantVoiceInput()" title="Voice Dictation">🎙️ Speak</button>
+        </div>
+        <div class="assistant-reply-box" id="assistant-reply-box" style="display:none;">
+          <div class="reply-badge">NEXUS AI // AUDIO-VISUAL RESPONSE</div>
+          <div class="reply-text" id="assistant-reply-text"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Attendance Feed Section -->
+    <section class="cyber-panel logs-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="bracket">[</span> REAL-TIME ATTENDANCE VERIFICATION FEED <span class="bracket">]</span>
+        </div>
+        <a href="/records" class="view-all-link">View Full History →</a>
+      </div>
+      <div class="feed-table-container">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>USER PROFILE</th>
+              <th>COHORT</th>
+              <th>PUNCH</th>
+              <th>PUNCTUALITY</th>
+              <th>TIME</th>
+              <th>CONFIDENCE</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-tbody">
+            {% if today_records %}
+              {% for rec in today_records[:6] %}
+              <tr>
+                <td class="user-cell">
+                  <div class="avatar-ring">
+                    {% if rec.snapshot_url %}
+                      <a href="{{ rec.snapshot_url }}" target="_blank" title="View Biometric Punch Proof">
+                        <img src="{{ rec.snapshot_url }}" class="punch-thumb" alt="Proof">
+                      </a>
+                    {% else %}
+                      👤
+                    {% endif %}
+                  </div>
+                  <div>
+                    <strong>{{ rec.user_name }}</strong>
+                    <div style="font-size:0.75rem; color:#94a3b8;">{{ rec.user_type or 'Employee' }}</div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge {% if rec.user_type == 'Student' %}student{% else %}office{% endif %}">
+                    {{ '🎓 Student' if rec.user_type == 'Student' else '🏢 Staff' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="punch-pill {% if rec.punch_type == 'CHECK_IN' %}in{% else %}out{% endif %}">
+                    {{ rec.punch_type or 'CHECK_IN' }}
+                  </span>
+                </td>
+                <td>
+                  {% if rec.is_late %}
+                    <span class="badge late">LATE</span>
+                  {% else %}
+                    <span class="badge ontimed">ON TIME</span>
+                  {% endif %}
+                </td>
+                <td>{{ rec.time }}</td>
+                <td>
+                  <div class="conf-bar-wrapper">
+                    <div class="conf-bar" style="width: {{ (rec.confidence * 100)|int }}%"></div>
+                    <span>{{ (rec.confidence * 100)|int }}%</span>
+                  </div>
+                </td>
+                <td><span class="badge present">{{ rec.status }}</span></td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" class="no-records">Waiting for face detection check-ins...</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS 3D ATTENDANCE SYSTEM // v3.4 // CHIRU, RAHUL, SOURAV PROFILES ACTIVE</div>
+    <div id="live-clock">--:--:--</div>
+  </footer>
+
+  <script src="/static/js/three_hologram.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Mass Crowd Biometric Surveillance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .crowd-container {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 25px;
+      margin-top: 20px;
+    }
+    .video-viewport {
+      position: relative;
+      background: #0d1117;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);
+    }
+    .video-viewport img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .crowd-overlay-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(13, 17, 23, 0.85);
+      border: 1px solid #00f3ff;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.75rem;
+      color: #00f3ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .crowd-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: rgba(13, 17, 23, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card.alert {
+      border-color: rgba(255, 51, 102, 0.4);
+    }
+    .stat-card.gold {
+      border-color: rgba(255, 183, 0, 0.4);
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .stat-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #00f3ff;
+    }
+    .stat-card.alert .stat-val {
+      color: #ff3366;
+    }
+    .stat-card.gold .stat-val {
+      color: #ffb700;
+    }
+    .control-panel {
+      background: rgba(13, 17, 23, 0.75);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .scenario-btn {
+      background: rgba(0, 243, 255, 0.08);
+      border: 1px solid rgba(0, 243, 255, 0.4);
+      color: #e2e8f0;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .scenario-btn:hover, .scenario-btn.active {
+      background: rgba(0, 243, 255, 0.22);
+      border-color: #00f3ff;
+      color: #00f3ff;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+    }
+    .scenario-btn.danger:hover, .scenario-btn.danger.active {
+      background: rgba(255, 51, 102, 0.22);
+      border-color: #ff3366;
+      color: #ff3366;
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+    }
+    .bulk-punch-btn {
+      background: linear-gradient(135deg, #00f3ff, #00a8ff);
+      color: #0a0e17;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+      transition: all 0.2s;
+    }
+    .bulk-punch-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.7);
+    }
+    .live-stream-log {
+      max-height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .log-item {
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 3px solid #00f3ff;
+      padding: 8px 12px;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .log-item.vip {
+      border-left-color: #ffb700;
+    }
+    .log-item.monitored {
+      border-left-color: #ff9100;
+    }
+    .log-item.banned {
+      border-left-color: #ff3366;
+      background: rgba(255, 51, 102, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'crowd' %}
+  {% set nav_icon = '👥' %}
+  {% set nav_title = 'CROWD MULTI-TARGET // PARALLEL ATTENDANCE & TRACKING' %}
+  {% set nav_subtitle = 'CONCURRENT MULTI-FACE DETECTION, OCCLUSION RESILIENCE & BULK LOGGING' %}
+  {% include 'nav_header.html' %}
+
+  <main style="padding: 20px 40px;">
+    <!-- Stat Cards -->
+    <div class="crowd-stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Active Headcount In View</div>
+        <div class="stat-val" id="val-headcount">3 TARGETS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Verified Staff / Students</div>
+        <div class="stat-val" id="val-verified" style="color: #00ff88;">{{ stats.present_today or 0 }} Checked In</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Executive VIPs On Duty</div>
+        <div class="stat-val" id="val-vips">2 ACTIVE</div>
+      </div>
+      <div class="stat-card alert">
+        <div class="stat-label">Security Flags / Intercepts</div>
+        <div class="stat-val" id="val-alerts">{{ stats.alert_count_today or 0 }}</div>
+      </div>
+    </div>
+
+    <div class="crowd-container">
+      <!-- Live Multi-Target Feed -->
+      <div class="video-viewport">
+        <div class="crowd-overlay-badge">
+          <span style="color:#00ff88;">●</span> SECTOR 1 // WIDE-ANGLE LOBBY ENTRANCE
+        </div>
+        <img id="crowd-stream" src="/video_feed_crowd" alt="Crowd Biometric Stream">
+      </div>
+
+      <!-- Controls & Live Feed -->
+      <div class="control-panel">
+        <div>
+          <h3 style="font-family:'Orbitron',monospace; font-size: 0.95rem; color:#00f3ff; margin-bottom: 4px;">CROWD TRAFFIC SCENARIOS</h3>
+          <p style="font-size:0.8rem; color:#94a3b8; margin-bottom: 12px;">Switch walk-up rush hour patterns in real time:</p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="scenario-btn active" id="btn-scen-rush" onclick="switchScenario('shift_rush')">
+              <span>⚡ Shift Rush Hour</span>
+              <span style="font-size: 0.75rem; color:#94a3b8;">Chiru, Priya, Aarav</span>
+            </button>
+            <button class="scenario-btn danger" id="btn-scen-sec" onclick="switchScenario('security_audit')">
+              <span>🛡️ Security Intercept Influx</span>
+              <span style="font-size: 0.75rem; color:#ff3366;">David, Natasha, Marcus [BANNED]</span>
+            </button>
+            <button class="scenario-btn" id="btn-scen-acad" onclick="switchScenario('academic_surge')">
+              <span>🎓 Student Lecture Surge</span>
+              <span style="font-size: 0.75rem; color:#94a3b8;">Sneha, Rohan, Emily</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="bulk-punch-btn" onclick="triggerBulkPunch()">
+          ⚡ Force Synchronous Bulk Punch
+        </button>
+
+        <div style="margin-top: 10px;">
+          <h4 style="font-family:'Orbitron',monospace; font-size: 0.85rem; color:#e2e8f0; margin-bottom: 8px; display: flex; justify-content: space-between;">
+            <span>SYNCHRONOUS PUNCH STREAM</span>
+            <span style="font-size: 0.7rem; color:#00f3ff;">LIVE SSE</span>
+          </h4>
+          <div class="live-stream-log" id="crowd-log-list">
+            <div class="log-item vip">
+              <div>
+                <strong>Chiru</strong> <span style="font-size:0.75rem; color:#ffb700;">★ VIP</span>
+                <div style="font-size:0.75rem; color:#94a3b8;">CHECK_IN // 09:02:14</div>
+              </div>
+              <span style="color:#00ff88; font-size:0.8rem; font-weight:600;">VERIFIED</span>
+            </div>
+            <div class="log-item">
+              <div>
+                <strong>Priya Sharma</strong> <span style="font-size:0.75rem; color:#00f3ff;">Staff</span>
+                <div style="font-size:0.75rem; color:#94a3b8;">CHECK_IN // 09:02:14</div>
+              </div>
+              <span style="color:#00ff88; font-size:0.8rem; font-weight:600;">VERIFIED</span>
+            </div>
+            <div class="log-item">
+              <div>
+                <strong>Aarav Mehta</strong> <span style="font-size:0.75rem; color:#00f3ff;">Student</span>
+                <div style="font-size:0.75rem; color:#94a3b8;">CHECK_IN // 09:02:14</div>
+              </div>
+              <span style="color:#00ff88; font-size:0.8rem; font-weight:600;">VERIFIED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function switchScenario(scen) {
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      if (scen === 'shift_rush') document.getElementById('btn-scen-rush').classList.add('active');
+      if (scen === 'security_audit') document.getElementById('btn-scen-sec').classList.add('active');
+      if (scen === 'academic_surge') document.getElementById('btn-scen-acad').classList.add('active');
+
+      try {
+        const res = await fetch('/api/crowd_simulate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ scenario: scen })
+        });
+        const data = await res.json();
+        console.log(data.message);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function triggerBulkPunch() {
+      try {
+        const res = await fetch('/api/crowd_punch', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Connect SSE for live crowd attendance events
+    const evtSource = new EventSource('/api/events');
+    evtSource.onmessage = function(e) {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.type === 'attendance') {
+          const rec = payload.data;
+          const list = document.getElementById('crowd-log-list');
+          const item = document.createElement('div');
+          
+          let clearanceTag = `<span style="font-size:0.75rem; color:#00f3ff;">${rec.user_type || 'Staff'}</span>`;
+          let itemClass = "log-item";
+          if (rec.security_clearance === 'VIP') {
+            itemClass += " vip";
+            clearanceTag = `<span style="font-size:0.75rem; color:#ffb700;">★ VIP</span>`;
+          } else if (rec.security_clearance === 'MONITORED') {
+            itemClass += " monitored";
+            clearanceTag = `<span style="font-size:0.75rem; color:#ff9100;">👁 MONITORED</span>`;
+          }
+
+          item.className = itemClass;
+          item.innerHTML = `
+            <div>
+              <strong>${rec.user_name}</strong> ${clearanceTag}
+              <div style="font-size:0.75rem; color:#94a3b8;">${rec.punch_type} // ${rec.time}</div>
+            </div>
+            <span style="color:#00ff88; font-size:0.8rem; font-weight:600;">VERIFIED</span>
+          `;
+          list.prepend(item);
+          if (list.children.length > 15) list.removeChild(list.lastChild);
+        } else if (payload.type === 'watchlist_breach') {
+          const inc = payload.data;
+          const list = document.getElementById('crowd-log-list');
+          const item = document.createElement('div');
+          item.className = "log-item banned";
+          item.innerHTML = `
+            <div>
+              <strong style="color:#ff3366;">${inc.user_name}</strong> <span style="font-size:0.75rem; color:#ff3366;">⚠ BANNED INTERCEPT</span>
+              <div style="font-size:0.75rem; color:#ff94a8;">BREACH BLOCKED // ${inc.time}</div>
+            </div>
+            <span style="color:#ff3366; font-size:0.8rem; font-weight:700;">DENIED</span>
+          `;
+          list.prepend(item);
+        }
+      } catch (err) {}
+    };
+  </script>
+</body>
+</html>

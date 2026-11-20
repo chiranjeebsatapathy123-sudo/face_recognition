@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS GATEWAY // Biometric Kiosk Terminal</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Fullscreen Kiosk specific layout */
+    body.kiosk-body {
+      background: #040810;
+      color: #e2e8f0;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kiosk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 28px;
+      background: rgba(8, 12, 22, 0.95);
+      border-bottom: 1px solid var(--border-cyan);
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+      z-index: 20;
+    }
+
+    .kiosk-title-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .kiosk-icon {
+      font-size: 1.8rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 12px var(--neon-cyan);
+    }
+
+    .kiosk-title {
+      font-family: var(--font-tech);
+      font-size: 1.25rem;
+      letter-spacing: 2.5px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .kiosk-subtitle {
+      font-family: var(--font-tech);
+      font-size: 0.72rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1.5px;
+    }
+
+    .kiosk-clock-box {
+      text-align: center;
+    }
+
+    .kiosk-clock {
+      font-family: var(--font-tech);
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+    }
+
+    .kiosk-date {
+      font-family: var(--font-tech);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .kiosk-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .kiosk-main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 20px;
+      padding: 20px 28px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .kiosk-stream-panel {
+      position: relative;
+      background: #000;
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+    }
+
+    .kiosk-stream-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Kiosk Gate Holographic Card */
+    .kiosk-gate-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: rgba(10, 15, 26, 0.85);
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      padding: 24px;
+      position: relative;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.15);
+    }
+
+    .gate-status-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px dashed var(--border-dim);
+      border-radius: 4px;
+      padding: 30px 20px;
+      transition: all 0.35s ease;
+      background: rgba(5, 8, 16, 0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Idle State */
+    .gate-idle-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 2px dashed var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      margin-bottom: 24px;
+      animation: rotateRadar 10s linear infinite;
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+    }
+
+    @keyframes rotateRadar {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .gate-state-title {
+      font-family: var(--font-tech);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .gate-state-desc {
+      font-size: 0.88rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+    }
+
+    /* Verified State */
+    .gate-status-card.granted {
+      border: 2px solid #00ff88;
+      background: rgba(0, 255, 136, 0.08);
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.4);
+    }
+
+    .gate-status-card.granted .gate-state-title {
+      color: #00ff88;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+    }
+
+    /* Denied / Unknown State */
+    .gate-status-card.denied {
+      border: 2px solid #ff3366;
+      background: rgba(255, 51, 102, 0.1);
+      box-shadow: 0 0 40px rgba(255, 51, 102, 0.4);
+    }
+
+    .gate-status-card.denied .gate-state-title {
+      color: #ff3366;
+      text-shadow: 0 0 15px rgba(255, 51, 102, 0.8);
+    }
+
+    .verified-avatar-wrap {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 3px solid #00ff88;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.7);
+      margin-bottom: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .verified-avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .verified-name {
+      font-family: var(--font-tech);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .verified-role {
+      font-size: 0.95rem;
+      color: var(--neon-cyan);
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+
+    .kiosk-badge-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .kiosk-telemetry-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 360px;
+      margin-top: 10px;
+    }
+
+    .telemetry-cell {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-dim);
+      padding: 8px 12px;
+      border-radius: 3px;
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+    }
+    .telemetry-cell .t-lbl { color: var(--text-muted); display: block; font-size: 0.65rem; }
+    .telemetry-cell .t-v { color: #fff; font-weight: 700; margin-top: 2px; }
+
+    /* Footer Stats */
+    .kiosk-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 28px;
+      background: rgba(8, 12, 22, 0.95);
+      border-top: 1px solid var(--border-dim);
+      font-family: var(--font-tech);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+
+    .kiosk-stat-pills {
+      display: flex;
+      gap: 16px;
+    }
+
+    .kiosk-stat-pill {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-dim);
+      padding: 4px 12px;
+      border-radius: 2px;
+    }
+    .kiosk-stat-pill span { color: var(--neon-cyan); font-weight: 700; }
+  </style>
+</head>
+<body class="kiosk-body">
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+  {% set active_page = 'kiosk' %}
+  {% set nav_icon = '🚪' %}
+  {% set nav_title = 'NEXUS GATEWAY // TURNSTILE KIOSK #01' %}
+  {% set nav_subtitle = 'HIGH-SECURITY BIOMETRIC TURNSTILE & CONTACTLESS ACCESS CONTROL' %}
+  {% include 'nav_header.html' %}
+
+  <!-- Main Split Layout -->
+  <main class="kiosk-main">
+    <!-- Camera Viewport -->
+    <div class="kiosk-stream-panel">
+      <img src="/video_feed" class="kiosk-stream-img" alt="Live Gate Feed">
+      <div class="viewport-overlay-decorations">
+        <div class="cam-crosshair"></div>
+      </div>
+    </div>
+
+    <!-- Live Gate Hologram Status Panel -->
+    <div class="kiosk-gate-panel">
+      <div class="panel-header">
+        <div class="panel-title"><span class="bracket">[</span> ACCESS CONTROL GATEWAY <span class="bracket">]</span></div>
+        <div class="panel-badge neon-green" id="gate-mode-badge">STATUS: MONITORING</div>
+      </div>
+
+      <!-- Dynamic Status Container -->
+      <div class="gate-status-card" id="gate-status-card">
+        <!-- Idle State HTML (Default) -->
+        <div id="gate-idle-content">
+          <div class="gate-idle-ring">👤</div>
+          <div class="gate-state-title">ALIGN FACE WITH SENSOR</div>
+          <div class="gate-state-desc">STAND 0.5m TO 1m DIRECTLY IN FRONT OF CAMERA</div>
+          <p style="color:var(--text-muted); font-size:0.8rem; max-width:320px; margin:0 auto;">
+            Hold steady for 1 second. Contactless facial recognition will automatically mark your attendance and grant turnstile passage.
+          </p>
+        </div>
+
+        <!-- Verified Access Granted State (Dynamic) -->
+        <div id="gate-granted-content" style="display:none;">
+          <div class="verified-avatar-wrap" id="verified-avatar-wrap">
+            <img id="verified-avatar-img" src="" alt="Verified Proof">
+          </div>
+          <div class="gate-state-title">✔ ACCESS GRANTED</div>
+          <div class="verified-name" id="verified-name">CHIRU</div>
+          <div class="verified-role" id="verified-role">Principal AI Engineer</div>
+
+          <div class="kiosk-badge-row">
+            <span class="punch-pill in" id="verified-punch-pill">CHECK_IN</span>
+            <span class="badge ontimed" id="verified-punctuality-badge">ON TIME</span>
+            <span class="badge office" id="verified-cohort-badge">EMPLOYEE</span>
+          </div>
+
+          <div class="kiosk-telemetry-strip">
+            <div class="telemetry-cell">
+              <span class="t-lbl">MATCH CONFIDENCE</span>
+              <div class="t-v" id="verified-conf" style="color:var(--neon-cyan);">98.4%</div>
+            </div>
+            <div class="telemetry-cell">
+              <span class="t-lbl">LIVENESS CHECK</span>
+              <div class="t-v" id="verified-liveness" style="color:#00ff88;">PASSED</div>
+            </div>
+            <div class="telemetry-cell">
+              <span class="t-lbl">TIMESTAMP</span>
+              <div class="t-v" id="verified-time">09:15:22</div>
+            </div>
+            <div class="telemetry-cell">
+              <span class="t-lbl">GATE RELAY</span>
+              <div class="t-v" style="color:#00ff88;">UNLOCKED (5s)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Stats -->
+  <footer class="kiosk-footer">
+    <div class="kiosk-stat-pills">
+      <div class="kiosk-stat-pill">🏢 STAFF PRESENT: <span id="kiosk-staff-count">{{ stats.present_employees or 0 }} / {{ stats.total_employees or 0 }}</span></div>
+      <div class="kiosk-stat-pill">🎓 STUDENTS PRESENT: <span id="kiosk-student-count">{{ stats.present_students or 0 }} / {{ stats.total_students or 0 }}</span></div>
+      <div class="kiosk-stat-pill">⚡ LATE TODAY: <span id="kiosk-late-count">{{ stats.late_count_today or 0 }}</span></div>
+      <div class="kiosk-stat-pill">🛡️ ANTI-SPOOF: <span style="color:#00ff88;">ACTIVE</span></div>
+    </div>
+    <div style="color:var(--text-muted);">
+      NEXUS BIOMETRIC TERMINAL // SECURE OPERATIONAL ENVIRONMENT
+    </div>
+  </footer>
+
+  <script>
+    let soundEnabled = true;
+    let knownLastId = null;
+    let idleTimeout = null;
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('kiosk-clock').textContent = `${h}:${m}:${s}`;
+
+      const yr = now.getFullYear();
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      const da = String(now.getDate()).padStart(2, '0');
+      document.getElementById('kiosk-date').textContent = `${yr}-${mo}-${da}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById("sound-toggle-btn");
+      btn.textContent = soundEnabled ? "🔊 Sound ON" : "🔇 Sound OFF";
+    }
+
+    function playAccessChime() {
+      if (!soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        
+        // Multi-frequency chord
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.08);
+          osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+        });
+      } catch (e) {}
+    }
+
+    async function pollGateTelemetry() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+
+        // Update footer counters
+        document.getElementById("kiosk-staff-count").textContent = `${data.present_employees || 0} / ${data.total_employees || 0}`;
+        document.getElementById("kiosk-student-count").textContent = `${data.present_students || 0} / ${data.total_students || 0}`;
+        document.getElementById("kiosk-late-count").textContent = data.late_count_today || 0;
+
+        if (data.last_scan && data.last_scan.id !== knownLastId) {
+          if (knownLastId !== null) {
+            triggerAccessGranted(data.last_scan);
+          }
+          knownLastId = data.last_scan.id;
+        }
+      } catch (e) {
+        console.warn("Kiosk poll error:", e);
+      }
+    }
+
+    function triggerAccessGranted(record) {
+      playAccessChime();
+
+      const card = document.getElementById("gate-status-card");
+      const idleContent = document.getElementById("gate-idle-content");
+      const grantedContent = document.getElementById("gate-granted-content");
+
+      idleContent.style.display = "none";
+      grantedContent.style.display = "block";
+      card.className = "gate-status-card granted";
+
+      document.getElementById("verified-name").textContent = (record.user_name || "AUTHORIZED SUBJECT").toUpperCase();
+      document.getElementById("verified-role").textContent = `${record.user_type || 'Staff Member'} // Verified Profile`;
+      
+      const avatarImg = document.getElementById("verified-avatar-img");
+      if (record.snapshot_url) {
+        avatarImg.src = record.snapshot_url;
+      } else {
+        avatarImg.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%2300ff88' viewBox='0 0 16 16'><path d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4z'/></svg>";
+      }
+
+      const punchPill = document.getElementById("verified-punch-pill");
+      punchPill.textContent = record.punch_type || "CHECK_IN";
+      punchPill.className = `punch-pill ${record.punch_type === 'CHECK_IN' ? 'in' : 'out'}`;
+
+      const puncBadge = document.getElementById("verified-punctuality-badge");
+      puncBadge.textContent = record.is_late ? "LATE ARRIVAL" : "ON TIME";
+      puncBadge.className = `badge ${record.is_late ? 'late' : 'ontimed'}`;
+
+      document.getElementById("verified-cohort-badge").textContent = (record.user_type || "Employee").toUpperCase();
+      document.getElementById("verified-conf").textContent = `${Math.round((record.confidence || 0.95) * 100)}%`;
+      document.getElementById("verified-time").textContent = record.time || "JUST NOW";
+
+      document.getElementById("gate-mode-badge").textContent = "GATE RELAY: UNLOCKED";
+      document.getElementById("gate-mode-badge").className = "panel-badge neon-green";
+
+      if (idleTimeout) clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        resetToIdle();
+      }, 4500);
+    }
+
+    function resetToIdle() {
+      const card = document.getElementById("gate-status-card");
+      card.className = "gate-status-card";
+      document.getElementById("gate-granted-content").style.display = "none";
+      document.getElementById("gate-idle-content").style.display = "block";
+      document.getElementById("gate-mode-badge").textContent = "STATUS: MONITORING";
+      document.getElementById("gate-mode-badge").className = "panel-badge neon-green";
+    }
+
+    // Instant Real-Time Push via Server-Sent Events (SSE)
+    if (window.EventSource) {
+      const es = new EventSource('/api/events');
+      es.onmessage = function(e) {
+        try {
+          const payload = JSON.parse(e.data);
+          if (payload.type === "attendance") {
+            triggerAccessGranted(payload.data);
+          } else if (payload.type === "defcon") {
+            handleDefconEvent(payload.data);
+          }
+        } catch(err) {}
+      };
+    }
+
+    function handleDefconEvent(data) {
+      const card = document.getElementById("gate-status-card");
+      if (data.level === 1) {
+        card.className = "gate-status-card denied";
+        document.getElementById("gate-granted-content").style.display = "none";
+        document.getElementById("gate-idle-content").style.display = "block";
+        document.getElementById("gate-mode-badge").textContent = "EMERGENCY: PERIMETER LOCKDOWN";
+        document.getElementById("gate-mode-badge").className = "panel-badge";
+        document.getElementById("gate-mode-badge").style.borderColor = "#ff3366";
+        document.getElementById("gate-mode-badge").style.color = "#ff3366";
+      } else {
+        resetToIdle();
+      }
+    }
+
+    setInterval(pollGateTelemetry, 2000);
+  </script>
+</body>
+</html>

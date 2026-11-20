@@ -1,0 +1,452 @@
+<!-- REUSABLE TWO-TIER ZERO-OVERFLOW CYBER NAVIGATION HEADER (24 APPS MATRIX) -->
+<header class="cyber-header">
+  <!-- Top Bar: Brand, Status Telemetry Pills, Defcon & Global SFX Engine -->
+  <div class="header-top-bar">
+    <div class="brand">
+      <div class="brand-icon">
+        <div class="hex-pulse"></div>
+        <span class="icon-core">{{ nav_icon|default('◈') }}</span>
+      </div>
+      <div>
+        <h1>{{ nav_title|default('NEXUS // BIOMETRIC 3D ATTENDANCE') }}</h1>
+        <p class="subtitle">{{ nav_subtitle|default('AUTONOMOUS FACIAL RECOGNITION & MOTION HUD ENGINE') }}</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-pill live">
+        <span class="pulse-dot"></span> STREAM ONLINE
+      </div>
+      <div class="status-pill tech">
+        AI CORE: <span>PYTORCH CNN + 3D HUD</span>
+      </div>
+      <div class="status-pill defcon-pill" id="defcon-status-pill" onclick="cycleDefconLevel()" title="Click to cycle DEFCON Threat Level">
+        DEFCON: <span id="defcon-text" class="defcon-4">LEVEL 4 [NORMAL]</span>
+      </div>
+      <div class="status-pill voice-pill" id="voice-status-pill" onclick="toggleVoiceControl()" title="Click to activate voice commands">
+        <span class="mic-icon">🎙️</span> <span id="voice-status-text">VOICE</span>
+      </div>
+      <div class="status-pill sfx-pill" id="sfx-status-pill" onclick="toggleSfx()" title="Click to toggle HUD Audio Sound Effects" style="cursor:pointer; border-color:rgba(0,255,136,0.35);">
+        🔊 <span id="sfx-status-text" style="color:#00ff88; font-weight:700;">SFX: ON</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Ribbon: Primary Links, Dropdowns & Action Hub -->
+  <nav class="nav-ribbon">
+    <div class="nav-group-left">
+      <a href="/" class="nav-btn {{ 'active' if active_page == 'live' else '' }}">Live Monitor</a>
+      <a href="/kiosk" class="nav-btn {{ 'active' if active_page == 'kiosk' else '' }}">🚪 Gate Kiosk</a>
+      <a href="/crowd" class="nav-btn {{ 'active' if active_page == 'crowd' else '' }}" style="border-color: #00f3ff; color: #00f3ff;">👥 Crowd Mode</a>
+      <a href="/access" class="nav-btn {{ 'active' if active_page == 'access' else '' }}" style="border-color: #ff3366; color: #ff3366;">🚪 Door Relays</a>
+      <a href="/watchlist" class="nav-btn {{ 'active' if active_page == 'watchlist' else '' }}" style="border-color: #ffb700; color: #ffb700;">🛡️ Watchlist & VIP</a>
+
+      <!-- Forensics Dropdown -->
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio'] else '' }}">🔬 Forensics ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="/studio"><span class="drop-icon">🧠</span> AI Neural Studio & Quantization</a>
+          <a href="/compare"><span class="drop-icon">🔬</span> Face Compare & Heatmap</a>
+          <a href="/liveness"><span class="drop-icon">🛡️</span> Anti-Spoof Liveness Lab</a>
+          <a href="/avatar"><span class="drop-icon">🗿</span> 3D Digital Twin Avatar</a>
+          <a href="/graph"><span class="drop-icon">🕸️</span> Threat & Relation Graph</a>
+          <a href="/ledger"><span class="drop-icon">⛓️</span> Cryptographic Audit Ledger</a>
+          <a href="/search"><span class="drop-icon">🔍</span> Forensic Re-ID Search</a>
+          <a href="/dossier"><span class="drop-icon">👤</span> Personnel Biometric Dossier</a>
+        </div>
+      </div>
+
+      <!-- Surveillance & Sensors Dropdown -->
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['floorplan', 'vitality', 'multicam', 'terminal', 'qrscan', 'enroll', 'geofence', 'hardware'] else '' }}">🎥 Matrix & Sensors ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="/geofence"><span class="drop-icon">📍</span> GPS Geo-Fence & Beacon Gateway</a>
+          <a href="/hardware"><span class="drop-icon">⚡</span> IoT Hardware & Relay Telemetry</a>
+          <a href="/floorplan"><span class="drop-icon">🗺️</span> Spatial Zone Floor Plan</a>
+          <a href="/vitality"><span class="drop-icon">🧠</span> Vitality & Emotion Telemetry</a>
+          <a href="/multicam"><span class="drop-icon">🎥</span> 4x CCTV Surveillance Matrix</a>
+          <a href="/terminal"><span class="drop-icon">💻</span> Cyber Voice CLI Terminal</a>
+          <a href="/qrscan"><span class="drop-icon">🪪</span> 2FA QR Badge Scan</a>
+          <a href="/enroll"><span class="drop-icon">➕</span> Dynamic Face Enrollment</a>
+        </div>
+      </div>
+
+      <!-- Operations & HR Dropdown -->
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['shifts', 'analytics', 'records', 'report', 'idcard', 'notifications', 'forecast', 'vault'] else '' }}">📊 Ops & HR ▾</button>
+        <div class="nav-dropdown-menu">
+          <a href="/vault"><span class="drop-icon">🗄️</span> Cryptographic Vault & Recovery</a>
+          <a href="/forecast"><span class="drop-icon">🔮</span> Predictive Attendance Forecast</a>
+          <a href="/shifts"><span class="drop-icon">🕒</span> Department Shifts & Policies</a>
+          <a href="/analytics"><span class="drop-icon">📈</span> Deep Analytics Suite</a>
+          <a href="/records"><span class="drop-icon">📋</span> Attendance Records & Proof</a>
+          <a href="/report"><span class="drop-icon">📜</span> Certified Daily Audit Report</a>
+          <a href="/idcard"><span class="drop-icon">🪪</span> Holographic ID Badges</a>
+          <a href="/notifications"><span class="drop-icon">📢</span> Dispatch & Notification Hub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-group-right">
+      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (30) ▾</button>
+      <a href="/alerts" class="nav-btn alert-btn {{ 'active' if active_page == 'alerts' else '' }}">🚨 Alerts (<span id="alert-badge-count">{{ stats.alert_count_today if stats and stats.alert_count_today is defined else 0 }}</span>)</a>
+      <a href="/api/export_csv" class="nav-btn export">📥 Export CSV</a>
+    </div>
+  </nav>
+
+  <!-- Mega-Menu Apps Matrix Drawer (All 30 modules) -->
+  <div id="apps-matrix-drawer" class="apps-matrix-drawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(0, 243, 255, 0.2); padding-bottom:10px;">
+      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (30 MODULES)</span>
+      <button onclick="toggleAppsMatrix()" style="background:transparent; border:none; color:#ff3366; font-size:1.1rem; cursor:pointer;">✕</button>
+    </div>
+    <div class="apps-grid">
+      <a href="/studio" class="app-tile" style="border-color:rgba(0, 243, 255, 0.4);">
+        <span class="app-tile-icon">🧠</span>
+        <div>
+          <div class="app-tile-title" style="color:#00f3ff;">AI Neural Studio</div>
+          <div class="app-tile-desc">CNN Fine-Tuning, Hyperparameter Optimizer & INT8 Quantization</div>
+        </div>
+      </a>
+      <a href="/vault" class="app-tile" style="border-color:rgba(0, 255, 136, 0.4);">
+        <span class="app-tile-icon">🗄️</span>
+        <div>
+          <div class="app-tile-title" style="color:#00ff88;">Cryptographic Vault</div>
+          <div class="app-tile-desc">Encrypted System Snapshots, Merkle Backups & Failover Recovery</div>
+        </div>
+      </a>
+      <a href="/" class="app-tile">
+        <span class="app-tile-icon">👁️</span>
+        <div>
+          <div class="app-tile-title">Live Monitor</div>
+          <div class="app-tile-desc">Primary 3D Cyber HUD Facial Recognition Feed</div>
+        </div>
+      </a>
+      <a href="/geofence" class="app-tile">
+        <span class="app-tile-icon">📍</span>
+        <div>
+          <div class="app-tile-title">GPS Geo-Fence</div>
+          <div class="app-tile-desc">Spatial Campus Perimeter & Mobile Beacon Walk-In</div>
+        </div>
+      </a>
+      <a href="/hardware" class="app-tile">
+        <span class="app-tile-icon">⚡</span>
+        <div>
+          <div class="app-tile-title">Hardware Telemetry</div>
+          <div class="app-tile-desc">IoT Solenoid Relay Coil Health & Subsystem Tests</div>
+        </div>
+      </a>
+      <a href="/avatar" class="app-tile">
+        <span class="app-tile-icon">🗿</span>
+        <div>
+          <div class="app-tile-title">3D Digital Twin</div>
+          <div class="app-tile-desc">Polytonal 3D Facial Avatar & Topography Mesh</div>
+        </div>
+      </a>
+      <a href="/forecast" class="app-tile">
+        <span class="app-tile-icon">🔮</span>
+        <div>
+          <div class="app-tile-title">Predictive Attendance</div>
+          <div class="app-tile-desc">ML Lateness Risk & Turnstile Congestion Forecast</div>
+        </div>
+      </a>
+      <a href="/terminal" class="app-tile">
+        <span class="app-tile-icon">💻</span>
+        <div>
+          <div class="app-tile-title">Voice CLI Terminal</div>
+          <div class="app-tile-desc">Tactical Cyber Console with Web Audio Oscilloscope</div>
+        </div>
+      </a>
+      <a href="/ledger" class="app-tile">
+        <span class="app-tile-icon">⛓️</span>
+        <div>
+          <div class="app-tile-title">Cryptographic Ledger</div>
+          <div class="app-tile-desc">SHA-256 Merkle Audit Chain & Tamper Validator</div>
+        </div>
+      </a>
+      <a href="/vitality" class="app-tile">
+        <span class="app-tile-icon">🧠</span>
+        <div>
+          <div class="app-tile-title">Vitality & Fatigue</div>
+          <div class="app-tile-desc">AI Facial Emotion, Attention & Wellness Telemetry</div>
+        </div>
+      </a>
+      <a href="/graph" class="app-tile">
+        <span class="app-tile-icon">🕸️</span>
+        <div>
+          <div class="app-tile-title">Relation & Threat Graph</div>
+          <div class="app-tile-desc">Interactive Force Network of Co-Presence & Breaches</div>
+        </div>
+      </a>
+      <a href="/floorplan" class="app-tile">
+        <span class="app-tile-icon">🗺️</span>
+        <div>
+          <div class="app-tile-title">Spatial Floor Plan</div>
+          <div class="app-tile-desc">Architectural Occupancy Radar & Muster Roll Call</div>
+        </div>
+      </a>
+      <a href="/liveness" class="app-tile">
+        <span class="app-tile-icon">🛡️</span>
+        <div>
+          <div class="app-tile-title">Liveness Lab</div>
+          <div class="app-tile-desc">ISO/IEC 30107 PAD Anti-Spoof Diagnostics</div>
+        </div>
+      </a>
+      <a href="/access" class="app-tile">
+        <span class="app-tile-icon">⚡</span>
+        <div>
+          <div class="app-tile-title">Door Solenoid Relays</div>
+          <div class="app-tile-desc">Hardware Relay Pulse, Anti-Tailgating & Panic Lock</div>
+        </div>
+      </a>
+      <a href="/dossier" class="app-tile">
+        <span class="app-tile-icon">👤</span>
+        <div>
+          <div class="app-tile-title">Biometric Dossier</div>
+          <div class="app-tile-desc">Longitudinal Attendance Timeline & Verification Proof</div>
+        </div>
+      </a>
+      <a href="/crowd" class="app-tile">
+        <span class="app-tile-icon">👥</span>
+        <div>
+          <div class="app-tile-title">Crowd Multi-Target</div>
+          <div class="app-tile-desc">Multi-Face Batch Attendance & Concurrent Tracking</div>
+        </div>
+      </a>
+      <a href="/watchlist" class="app-tile">
+        <span class="app-tile-icon">🚨</span>
+        <div>
+          <div class="app-tile-title">Watchlist & VIP</div>
+          <div class="app-tile-desc">Clearance Tiers, Blacklist Interception & VIP Alerts</div>
+        </div>
+      </a>
+      <a href="/compare" class="app-tile">
+        <span class="app-tile-icon">🔬</span>
+        <div>
+          <div class="app-tile-title">Forensic Face Compare</div>
+          <div class="app-tile-desc">1:1 Verification & JET Colormap Error Heatmap</div>
+        </div>
+      </a>
+      <a href="/kiosk" class="app-tile">
+        <span class="app-tile-icon">🚪</span>
+        <div>
+          <div class="app-tile-title">Gate Kiosk</div>
+          <div class="app-tile-desc">Turnstile Terminal with Active Liveness Challenges</div>
+        </div>
+      </a>
+      <a href="/multicam" class="app-tile">
+        <span class="app-tile-icon">🎥</span>
+        <div>
+          <div class="app-tile-title">Surveillance Matrix</div>
+          <div class="app-tile-desc">4-Zone Real-Time CCTV Camera Array</div>
+        </div>
+      </a>
+      <a href="/qrscan" class="app-tile">
+        <span class="app-tile-icon">🪪</span>
+        <div>
+          <div class="app-tile-title">2FA QR Scanner</div>
+          <div class="app-tile-desc">Multi-Factor Face + QR Badge Authentication</div>
+        </div>
+      </a>
+      <a href="/shifts" class="app-tile">
+        <span class="app-tile-icon">🕒</span>
+        <div>
+          <div class="app-tile-title">Shifts & Policies</div>
+          <div class="app-tile-desc">Department Rosters, Overtime & Grace Periods</div>
+        </div>
+      </a>
+      <a href="/analytics" class="app-tile">
+        <span class="app-tile-icon">📈</span>
+        <div>
+          <div class="app-tile-title">Analytics Suite</div>
+          <div class="app-tile-desc">Heatmaps, Punctuality Curves & Insights</div>
+        </div>
+      </a>
+      <a href="/search" class="app-tile">
+        <span class="app-tile-icon">🔍</span>
+        <div>
+          <div class="app-tile-title">Forensic Search</div>
+          <div class="app-tile-desc">Probe Image Face Matching & Re-Identification</div>
+        </div>
+      </a>
+      <a href="/notifications" class="app-tile">
+        <span class="app-tile-icon">📢</span>
+        <div>
+          <div class="app-tile-title">Notification Hub</div>
+          <div class="app-tile-desc">Automated Telegram, Webhook & Email Dispatches</div>
+        </div>
+      </a>
+      <a href="/records" class="app-tile">
+        <span class="app-tile-icon">📋</span>
+        <div>
+          <div class="app-tile-title">Audit Records</div>
+          <div class="app-tile-desc">Punch Logs, Confidence Scores & CCTV Snapshots</div>
+        </div>
+      </a>
+      <a href="/report" class="app-tile">
+        <span class="app-tile-icon">📜</span>
+        <div>
+          <div class="app-tile-title">Daily Audit Report</div>
+          <div class="app-tile-desc">Print-Ready Certified Compliance Summary</div>
+        </div>
+      </a>
+      <a href="/idcard" class="app-tile">
+        <span class="app-tile-icon">🪪</span>
+        <div>
+          <div class="app-tile-title">Holo ID Badges</div>
+          <div class="app-tile-desc">Generate Holographic 3D Security ID Passes</div>
+        </div>
+      </a>
+      <a href="/enroll" class="app-tile">
+        <span class="app-tile-icon">➕</span>
+        <div>
+          <div class="app-tile-title">Face Enrollment</div>
+          <div class="app-tile-desc">Multi-Angle Snapshot Registration with YuNet</div>
+        </div>
+      </a>
+      <a href="/alerts" class="app-tile">
+        <span class="app-tile-icon">🚨</span>
+        <div>
+          <div class="app-tile-title">Security Incidents</div>
+          <div class="app-tile-desc">Live Intrusion Log & Forensic Evidence Vault</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</header>
+
+<script>
+// ==========================================
+// GLOBAL WEB AUDIO SFX SYNTHESIZER
+// ==========================================
+let sfxEnabled = localStorage.getItem('nexus_sfx') !== 'false';
+let audioCtx = null;
+
+function initAudioContext() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) audioCtx = new AudioContext();
+  }
+}
+
+function playSfx(type = 'click') {
+  if (!sfxEnabled) return;
+  try {
+    initAudioContext();
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'click') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400, t);
+      osc.frequency.exponentialRampToValueAtTime(700, t + 0.04);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      osc.start(t);
+      osc.stop(t + 0.04);
+    } else if (type === 'granted') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(587.33, t); // D5
+      osc.frequency.setValueAtTime(880, t + 0.08); // A5
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.start(t);
+      osc.stop(t + 0.35);
+    } else if (type === 'denied') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, t);
+      osc.frequency.setValueAtTime(140, t + 0.1);
+      gain.gain.setValueAtTime(0.15, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    } else if (type === 'radar') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2400, t);
+      osc.frequency.exponentialRampToValueAtTime(1200, t + 0.12);
+      gain.gain.setValueAtTime(0.06, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      osc.start(t);
+      osc.stop(t + 0.12);
+    }
+  } catch (e) {
+    // Audio policy may prevent sound prior to user gesture
+  }
+}
+
+function toggleSfx() {
+  sfxEnabled = !sfxEnabled;
+  localStorage.setItem('nexus_sfx', sfxEnabled ? 'true' : 'false');
+  const textEl = document.getElementById('sfx-status-text');
+  if (textEl) {
+    textEl.textContent = sfxEnabled ? 'SFX: ON' : 'SFX: MUTE';
+    textEl.style.color = sfxEnabled ? '#00ff88' : '#64748b';
+  }
+  if (sfxEnabled) playSfx('click');
+}
+
+// Bind SFX to UI buttons on load
+document.addEventListener('DOMContentLoaded', () => {
+  const textEl = document.getElementById('sfx-status-text');
+  if (textEl) {
+    textEl.textContent = sfxEnabled ? 'SFX: ON' : 'SFX: MUTE';
+    textEl.style.color = sfxEnabled ? '#00ff88' : '#64748b';
+  }
+  document.querySelectorAll('.nav-btn, .quick-preset-btn, .app-tile, .cyber-button').forEach(el => {
+    el.addEventListener('click', () => playSfx('click'));
+  });
+});
+
+// Global Navigation Drawer
+function toggleAppsMatrix() {
+  playSfx('radar');
+  const drawer = document.getElementById("apps-matrix-drawer");
+  if (drawer) drawer.classList.toggle("open");
+}
+
+document.addEventListener("click", function(e) {
+  const drawer = document.getElementById("apps-matrix-drawer");
+  const launcher = e.target.closest(".apps-launcher-btn");
+  if (drawer && drawer.classList.contains("open") && !drawer.contains(e.target) && !launcher) {
+    drawer.classList.remove("open");
+  }
+});
+
+// DEFCON cycling
+async function cycleDefconLevel() {
+  playSfx('click');
+  try {
+    const res = await fetch('/api/defcon/cycle', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      const textEl = document.getElementById('defcon-text');
+      if (textEl) {
+        textEl.textContent = `LEVEL ${data.defcon.level} [${data.defcon.name}]`;
+        textEl.className = `defcon-${data.defcon.level}`;
+      }
+    }
+  } catch (e) {
+    console.warn("DEFCON cycle failed:", e);
+  }
+}
+
+// Global Voice Assistant Trigger
+function toggleVoiceControl() {
+  playSfx('click');
+  const vp = document.getElementById('voice-status-pill');
+  if (vp) vp.classList.toggle('active');
+  const assistantCard = document.getElementById('voice-assistant-card');
+  if (assistantCard) {
+    assistantCard.scrollIntoView({ behavior: 'smooth' });
+    const input = document.getElementById('assistant-input');
+    if (input) input.focus();
+  } else {
+    window.location.href = '/terminal';
+  }
+}
+</script>

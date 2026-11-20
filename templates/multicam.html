@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS // Multi-Camera Surveillance Matrix</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body.multicam-body {
+      background: #03060c;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .multicam-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 16px;
+      padding: 16px 24px;
+      box-sizing: border-box;
+      min-height: calc(100vh - 120px);
+    }
+
+    .cctv-tile {
+      background: #000;
+      border: 1px solid var(--border-cyan);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.12);
+      transition: all 0.25s ease;
+    }
+    .cctv-tile:hover {
+      border-color: #fff;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.35);
+    }
+
+    .tile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 14px;
+      background: rgba(8, 12, 22, 0.95);
+      border-bottom: 1px solid var(--border-dim);
+      font-family: var(--font-tech);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      z-index: 5;
+    }
+
+    .tile-title {
+      color: #fff;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tile-tag {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 2px;
+      background: rgba(0, 243, 255, 0.15);
+      border: 1px solid var(--border-cyan);
+      color: var(--neon-cyan);
+    }
+    .tile-tag.active-sensor {
+      background: rgba(0, 255, 136, 0.2);
+      border-color: #00ff88;
+      color: #00ff88;
+    }
+    .tile-tag.restricted {
+      background: rgba(255, 51, 102, 0.2);
+      border-color: #ff3366;
+      color: #ff3366;
+    }
+
+    .tile-video-wrap {
+      flex: 1;
+      position: relative;
+      background: #050811;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tile-video-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .tile-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 14px;
+      background: rgba(8, 12, 22, 0.95);
+      border-top: 1px solid var(--border-dim);
+      font-family: var(--font-tech);
+      font-size: 0.7rem;
+    }
+
+    .tile-controls button {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-dim);
+      color: var(--neon-cyan);
+      font-family: var(--font-tech);
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tile-controls button:hover {
+      background: rgba(0, 243, 255, 0.2);
+      border-color: var(--neon-cyan);
+      color: #fff;
+    }
+  </style>
+</head>
+<body class="multicam-body">
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+    {% set active_page = 'multicam' %}
+  {% set nav_icon = '🎥' %}
+  {% set nav_title = 'SURVEILLANCE MATRIX // 4X CCTV ARRAY' %}
+  {% set nav_subtitle = 'MULTI-CAMERA FACIAL MONITORING & PERIMETER SYNCHRONIZATION' %}
+  {% include 'nav_header.html' %}
+
+  <!-- 4-Quadrant Camera Grid -->
+  <main class="multicam-grid">
+    <!-- Tile 1: Primary AI Attendance Sensor -->
+    <div class="cctv-tile">
+      <div class="tile-header">
+        <div class="tile-title">
+          <span>CAM-01</span> // ENTRANCE TURNSTILE
+          <span class="tile-tag active-sensor">PRIMARY AI SENSOR</span>
+        </div>
+        <div class="panel-badge neon-green">LIVE // 1080p</div>
+      </div>
+      <div class="tile-video-wrap">
+        <img src="/video_feed" alt="CAM 01 Feed">
+      </div>
+      <div class="tile-footer">
+        <span style="color:var(--neon-green);">AI ENGINE: YUNET + PYTORCH CNN // ACTIVE</span>
+        <div class="tile-controls">
+          <button onclick="window.location.href='/kiosk'">Open Gate Kiosk</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 2: Workplace Wing -->
+    <div class="cctv-tile">
+      <div class="tile-header">
+        <div class="tile-title">
+          <span>CAM-02</span> // WORKPLACE OFFICE WING
+          <span class="tile-tag">PATROL FEED</span>
+        </div>
+        <div class="panel-badge">ONLINE // 720p</div>
+      </div>
+      <div class="tile-video-wrap">
+        <img src="/video_feed_cam2" alt="CAM 02 Feed">
+      </div>
+      <div class="tile-footer">
+        <span style="color:var(--text-muted);">SECTOR: LEVEL 2 ENGINEERING // SECURE</span>
+        <div class="tile-controls">
+          <button onclick="switchCameraSource('0')">Promote to Primary</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 3: Student Academic Hallway -->
+    <div class="cctv-tile">
+      <div class="tile-header">
+        <div class="tile-title">
+          <span>CAM-03</span> // STUDENT ACADEMIC HALLWAY
+          <span class="tile-tag">PATROL FEED</span>
+        </div>
+        <div class="panel-badge">ONLINE // 720p</div>
+      </div>
+      <div class="tile-video-wrap">
+        <img src="/video_feed_cam3" alt="CAM 03 Feed">
+      </div>
+      <div class="tile-footer">
+        <span style="color:var(--text-muted);">SECTOR: CS & ROBOTICS CORRIDOR // CLEAR</span>
+        <div class="tile-controls">
+          <button onclick="switchCameraSource('simulated')">Promote to Primary</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 4: Restricted Server Vault -->
+    <div class="cctv-tile">
+      <div class="tile-header">
+        <div class="tile-title">
+          <span>CAM-04</span> // RESTRICTED SERVER VAULT
+          <span class="tile-tag restricted">SECURITY CLEARANCE REQ</span>
+        </div>
+        <div class="panel-badge" style="border-color:#ff3366; color:#ff3366;">HIGH SECURITY</div>
+      </div>
+      <div class="tile-video-wrap">
+        <img src="/video_feed_cam4" alt="CAM 04 Feed">
+      </div>
+      <div class="tile-footer">
+        <span style="color:#ff3366;">MOTION TRIPWIRE: ARMED // 0 BREACHES</span>
+        <div class="tile-controls">
+          <button onclick="window.location.href='/alerts'">View Breaches</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="cyber-footer">
+    <div>NEXUS SURVEILLANCE MATRIX // 4 ACTIVE CHANNELS</div>
+    <div>ENCRYPTION: AES-256 GCM // ZERO PACKET LOSS</div>
+  </footer>
+
+  <script>
+    async function switchCameraSource(src) {
+      try {
+        await fetch("/api/set_camera", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: src })
+        });
+        alert(`Sensor assigned: Source set to ${src}`);
+        window.location.href = "/";
+      } catch (e) {
+        alert("Camera switch failed: " + e.message);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Logs // NEXUS 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+    {% set active_page = 'records' %}
+  {% set nav_icon = '📋' %}
+  {% set nav_title = 'ATTENDANCE AUDIT LOGS // VERIFIED PUNCH ARCHIVE' %}
+  {% set nav_subtitle = 'HISTORICAL ACCESS RECORDS, FILTER ENGINE & PHOTO PROOF LIGHTBOX' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <div class="records-actions-bar">
+      <div class="filter-tabs">
+        <a href="/records" class="filter-tab {% if current_type == 'All' %}active{% endif %}">All Profiles</a>
+        <a href="/records?type=Employee" class="filter-tab {% if current_type == 'Employee' %}active{% endif %}">🏢 Office Staff</a>
+        <a href="/records?type=Student" class="filter-tab {% if current_type == 'Student' %}active{% endif %}">🎓 Students Cohort</a>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Search by name..." class="cyber-input" onkeyup="filterRecords()">
+        <div class="total-badge">Logs: {{ records|length }}</div>
+      </div>
+    </div>
+
+    <section class="cyber-panel">
+      <div class="feed-table-container">
+        <table class="cyber-table" id="records-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>PROOF</th>
+              <th>NAME</th>
+              <th>COHORT / TYPE</th>
+              <th>PUNCH TYPE</th>
+              <th>PUNCTUALITY</th>
+              <th>DATE</th>
+              <th>TIME</th>
+              <th>MATCH</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rec in records %}
+            <tr>
+              <td>#{{ rec.id }}</td>
+              <td>
+                {% if rec.snapshot_url %}
+                  <img src="{{ rec.snapshot_url }}" class="punch-thumb" alt="Proof" onclick='openForensicModal({{ rec|tojson|safe }})' title="Click to view Forensic Telemetry">
+                {% else %}
+                  <div class="avatar-ring small">👤</div>
+                {% endif %}
+              </td>
+              <td class="user-cell" style="cursor:pointer;" onclick='openForensicModal({{ rec|tojson|safe }})' title="Click to view Forensic Telemetry"><strong>{{ rec.user_name }}</strong></td>
+              <td>
+                <span class="badge {% if rec.user_type == 'Student' %}student{% else %}office{% endif %}">
+                  {{ rec.user_type or 'Employee' }}
+                </span>
+              </td>
+              <td>
+                <span class="punch-pill {% if rec.punch_type == 'CHECK_IN' %}in{% else %}out{% endif %}">
+                  {{ rec.punch_type or 'CHECK_IN' }}
+                </span>
+              </td>
+              <td>
+                {% if rec.is_late %}
+                  <span class="badge late">LATE ARRIVAL</span>
+                {% else %}
+                  <span class="badge ontimed">ON TIME</span>
+                {% endif %}
+              </td>
+              <td>{{ rec.date }}</td>
+              <td>{{ rec.time }}</td>
+              <td>
+                <div class="conf-bar-wrapper">
+                  <div class="conf-bar" style="width: {{ (rec.confidence * 100)|int }}%"></div>
+                  <span>{{ (rec.confidence * 100)|int }}%</span>
+                </div>
+              </td>
+              <td><span class="badge present">{{ rec.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="10" class="no-records">No attendance logs found for this filter.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    function filterRecords() {
+      const input = document.getElementById("search-input").value.toUpperCase();
+      const rows = document.querySelectorAll("#records-table tbody tr");
+      rows.forEach(row => {
+        const nameCell = row.querySelector(".user-cell");
+        if (nameCell) {
+          const txt = nameCell.textContent || nameCell.innerText;
+          row.style.display = txt.toUpperCase().indexOf(input) > -1 ? "" : "none";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
