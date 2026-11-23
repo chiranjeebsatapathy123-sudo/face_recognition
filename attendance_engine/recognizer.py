@@ -71,7 +71,11 @@ class HybridFaceRecognizer:
             try:
                 num_classes = len(self.label_map)
                 self.cnn_model = FaceCNN(num_classes=num_classes)
-                self.cnn_model.load_state_dict(torch.load(CNN_WEIGHTS, map_location=torch.device('cpu')))
+                ckpt = torch.load(CNN_WEIGHTS, map_location=torch.device('cpu'), weights_only=False)
+                if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
+                    self.cnn_model.load_state_dict(ckpt["model_state_dict"])
+                else:
+                    self.cnn_model.load_state_dict(ckpt)
                 self.cnn_model.eval()
             except Exception as e:
                 print(f"Warning: Could not load CNN weights: {e}")

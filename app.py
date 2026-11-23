@@ -1614,6 +1614,151 @@ def api_collector_capture_burst():
 
 
 
+# ==========================================
+# MODULE 35: NEURAL RETRAINING & WEIGHT ENGINE
+# ==========================================
+@app.route('/retrain')
+def retrain_view():
+    from attendance_engine.retrain import retrain_engine
+    stats = db.get_stats()
+    telemetry = retrain_engine.get_model_telemetry()
+    return render_template('retrain.html', stats=stats, telemetry=telemetry, active_page='retrain')
+
+@app.route('/api/retrain/status')
+def api_retrain_status():
+    from attendance_engine.retrain import retrain_engine
+    return jsonify(retrain_engine.get_model_telemetry())
+
+@app.route('/api/retrain/start', methods=['POST'])
+def api_retrain_start():
+    from attendance_engine.retrain import retrain_engine
+    data = request.get_json() or {}
+    arch = data.get('arch', 'nexus_lenet')
+    epochs = int(data.get('epochs', 8))
+    batch_size = int(data.get('batch_size', 32))
+    lr = float(data.get('lr', 0.001))
+    augment = bool(data.get('augment', True))
+
+    result = retrain_engine.train_neural_network(
+        epochs=epochs,
+        batch_size=batch_size,
+        lr=lr,
+        arch=arch,
+        augment=augment
+    )
+    return jsonify(result)
+
+@app.route('/api/retrain/test_inference', methods=['POST'])
+def api_retrain_test_inference():
+    from attendance_engine.retrain import retrain_engine
+    data = request.get_json() or {}
+    identity = data.get('identity', 'Chiru').replace(" ", "")
+    
+    ref_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "punches", f"profile_{identity}.jpg")
+    if not os.path.exists(ref_path):
+        ref_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "punches", "profile_Chiru.jpg")
+    
+    img = cv2.imread(ref_path)
+    if img is None:
+        img = np.full((100, 100, 3), 128, dtype=np.uint8)
+
+    res = retrain_engine.run_live_inference(img)
+    return jsonify(res)
+
+@app.route('/api/retrain/export_weights/<format_name>')
+def api_retrain_export_weights(format_name):
+    if format_name == 'pytorch':
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "face_cnn.pt")
+        if os.path.exists(p):
+            return send_file(p, as_attachment=True, download_name="face_cnn.pt")
+    elif format_name == 'knn':
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "knn_model.pkl")
+        if os.path.exists(p):
+            return send_file(p, as_attachment=True, download_name="knn_model.pkl")
+    elif format_name == 'keras':
+        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "project_face_detect", "final_model.h5")
+        if os.path.exists(p):
+            return send_file(p, as_attachment=True, download_name="final_model.h5")
+    return jsonify({"error": "File not found"}), 404
+
+
+# ==========================================
+# MODULE 36: CERTIFIED COMPLIANCE EXPORT CENTER
+# ==========================================
+@app.route('/export_center')
+def export_center_view():
+    from datetime import datetime
+    stats = db.get_stats()
+    all_records = db.get_all_records()
+    users = db.get_users()
+    user_dept_map = {u["name"]: u.get("department", "Engineering") for u in users}
+
+    preview_records = []
+    for r in all_records[:25]:
+        r_copy = dict(r)
+        r_copy["department"] = user_dept_map.get(r["user_name"], "Operations")
+        preview_records.append(r_copy)
+
+    return render_template(
+        'export_center.html',
+        stats=stats,
+        total_records=len(all_records),
+        preview_records=preview_records,
+        users=users,
+        active_page='export_center'
+    )
+
+@app.route('/api/export/pdf')
+def api_export_pdf():
+    from datetime import datetime
+    from attendance_engine.export import generate_certified_compliance_pdf
+    filters = {
+        "department": request.args.get("department", "ALL"),
+        "punch_type": request.args.get("punch_type", "ALL"),
+        "date": request.args.get("date", "ALL")
+    }
+    pdf_bytes = generate_certified_compliance_pdf(db, filters=filters)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"Nexus_Biometric_Compliance_Certificate_{datetime.now().strftime('%Y%m%d')}.pdf"
+    )
+
+@app.route('/api/export/excel')
+def api_export_excel():
+    from datetime import datetime
+    from attendance_engine.export import generate_enterprise_excel_xml
+    filters = {
+        "department": request.args.get("department", "ALL"),
+        "punch_type": request.args.get("punch_type", "ALL"),
+        "date": request.args.get("date", "ALL")
+    }
+    excel_bytes = generate_enterprise_excel_xml(db, filters=filters)
+    return send_file(
+        io.BytesIO(excel_bytes),
+        mimetype="application/vnd.ms-excel",
+        as_attachment=True,
+        download_name=f"Nexus_Enterprise_Attendance_Workbook_{datetime.now().strftime('%Y%m%d')}.xls"
+    )
+
+@app.route('/api/export/json_audit')
+def api_export_json_audit():
+    from datetime import datetime
+    from attendance_engine.export import generate_certified_json_audit
+    filters = {
+        "department": request.args.get("department", "ALL"),
+        "punch_type": request.args.get("punch_type", "ALL"),
+        "date": request.args.get("date", "ALL")
+    }
+    json_str = generate_certified_json_audit(db, filters=filters)
+    return Response(
+        json_str,
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment;filename=Nexus_Certified_Audit_{datetime.now().strftime('%Y%m%d')}.json"}
+    )
+
+
 if __name__ == '__main__':
     print("=======================================================")
     print(" 🚀 3D CYBER BIOMETRIC ATTENDANCE SYSTEM RUNNING")

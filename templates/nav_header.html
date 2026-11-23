@@ -42,11 +42,12 @@
 
       <!-- Forensics Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio', 'adversarial', 'collector'] else '' }}">🔬 Forensics ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio', 'adversarial', 'collector', 'retrain'] else '' }}">🔬 Forensics ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/retrain"><span class="drop-icon">🧠</span> Neural Retraining & Weights</a>
           <a href="/collector"><span class="drop-icon">📸</span> Face Dataset Studio & Auto-Annotator</a>
           <a href="/adversarial"><span class="drop-icon">⚔️</span> Adversarial & Deepfake Arena</a>
-          <a href="/studio"><span class="drop-icon">🧠</span> AI Neural Studio & Quantization</a>
+          <a href="/studio"><span class="drop-icon">⚡</span> AI Neural Studio & Quantization</a>
           <a href="/compare"><span class="drop-icon">🔬</span> Face Compare & Heatmap</a>
           <a href="/liveness"><span class="drop-icon">🛡️</span> Anti-Spoof Liveness Lab</a>
           <a href="/avatar"><span class="drop-icon">🗿</span> 3D Digital Twin Avatar</a>
@@ -76,8 +77,9 @@
 
       <!-- Operations & HR Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['shifts', 'analytics', 'records', 'report', 'idcard', 'notifications', 'forecast', 'vault'] else '' }}">📊 Ops & HR ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['shifts', 'analytics', 'records', 'report', 'idcard', 'notifications', 'forecast', 'vault', 'export_center'] else '' }}">📊 Ops & HR ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/export_center"><span class="drop-icon">📜</span> Certified Export Center</a>
           <a href="/vault"><span class="drop-icon">🗄️</span> Cryptographic Vault & Recovery</a>
           <a href="/forecast"><span class="drop-icon">🔮</span> Predictive Attendance Forecast</a>
           <a href="/shifts"><span class="drop-icon">🕒</span> Department Shifts & Policies</a>
@@ -91,19 +93,33 @@
     </div>
 
     <div class="nav-group-right">
-      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (34) ▾</button>
+      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (36) ▾</button>
       <a href="/alerts" class="nav-btn alert-btn {{ 'active' if active_page == 'alerts' else '' }}">🚨 Alerts (<span id="alert-badge-count">{{ stats.alert_count_today if stats and stats.alert_count_today is defined else 0 }}</span>)</a>
       <a href="/api/export_csv" class="nav-btn export">📥 Export CSV</a>
     </div>
   </nav>
 
-  <!-- Mega-Menu Apps Matrix Drawer (All 34 modules) -->
+  <!-- Mega-Menu Apps Matrix Drawer (All 36 modules) -->
   <div id="apps-matrix-drawer" class="apps-matrix-drawer">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(0, 243, 255, 0.2); padding-bottom:10px;">
-      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (34 MODULES)</span>
+      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (36 MODULES)</span>
       <button onclick="toggleAppsMatrix()" style="background:transparent; border:none; color:#ff3366; font-size:1.1rem; cursor:pointer;">✕</button>
     </div>
     <div class="apps-grid">
+      <a href="/retrain" class="app-tile" style="border-color:rgba(0, 243, 255, 0.5); background:rgba(0, 243, 255, 0.05);">
+        <span class="app-tile-icon">🧠</span>
+        <div>
+          <div class="app-tile-title" style="color:#00f3ff;">Neural Retraining</div>
+          <div class="app-tile-desc">PyTorch LeNet & MobileFaceNet Training, Loss Curves & Keras Bridge</div>
+        </div>
+      </a>
+      <a href="/export_center" class="app-tile" style="border-color:rgba(255, 51, 102, 0.5); background:rgba(255, 51, 102, 0.05);">
+        <span class="app-tile-icon">📜</span>
+        <div>
+          <div class="app-tile-title" style="color:#ff3366;">Export Center</div>
+          <div class="app-tile-desc">Certified Executive PDF Dossier, 4-Sheet Excel & Signed JSON</div>
+        </div>
+      </a>
       <a href="/collector" class="app-tile" style="border-color:rgba(0, 255, 136, 0.4);">
         <span class="app-tile-icon">📸</span>
         <div>
