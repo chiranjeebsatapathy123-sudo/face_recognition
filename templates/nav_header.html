@@ -42,8 +42,9 @@
 
       <!-- Forensics Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio'] else '' }}">🔬 Forensics ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio', 'adversarial'] else '' }}">🔬 Forensics ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/adversarial"><span class="drop-icon">⚔️</span> Adversarial & Deepfake Arena</a>
           <a href="/studio"><span class="drop-icon">🧠</span> AI Neural Studio & Quantization</a>
           <a href="/compare"><span class="drop-icon">🔬</span> Face Compare & Heatmap</a>
           <a href="/liveness"><span class="drop-icon">🛡️</span> Anti-Spoof Liveness Lab</a>
@@ -57,8 +58,9 @@
 
       <!-- Surveillance & Sensors Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['floorplan', 'vitality', 'multicam', 'terminal', 'qrscan', 'enroll', 'geofence', 'hardware'] else '' }}">🎥 Matrix & Sensors ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['floorplan', 'vitality', 'multicam', 'terminal', 'qrscan', 'enroll', 'geofence', 'hardware', 'mesh'] else '' }}">🎥 Matrix & Sensors ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/mesh"><span class="drop-icon">🌐</span> Global Campus Mesh & P2P Sync</a>
           <a href="/geofence"><span class="drop-icon">📍</span> GPS Geo-Fence & Beacon Gateway</a>
           <a href="/hardware"><span class="drop-icon">⚡</span> IoT Hardware & Relay Telemetry</a>
           <a href="/floorplan"><span class="drop-icon">🗺️</span> Spatial Zone Floor Plan</a>
@@ -87,19 +89,33 @@
     </div>
 
     <div class="nav-group-right">
-      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (30) ▾</button>
+      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (32) ▾</button>
       <a href="/alerts" class="nav-btn alert-btn {{ 'active' if active_page == 'alerts' else '' }}">🚨 Alerts (<span id="alert-badge-count">{{ stats.alert_count_today if stats and stats.alert_count_today is defined else 0 }}</span>)</a>
       <a href="/api/export_csv" class="nav-btn export">📥 Export CSV</a>
     </div>
   </nav>
 
-  <!-- Mega-Menu Apps Matrix Drawer (All 30 modules) -->
+  <!-- Mega-Menu Apps Matrix Drawer (All 32 modules) -->
   <div id="apps-matrix-drawer" class="apps-matrix-drawer">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(0, 243, 255, 0.2); padding-bottom:10px;">
-      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (30 MODULES)</span>
+      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (32 MODULES)</span>
       <button onclick="toggleAppsMatrix()" style="background:transparent; border:none; color:#ff3366; font-size:1.1rem; cursor:pointer;">✕</button>
     </div>
     <div class="apps-grid">
+      <a href="/adversarial" class="app-tile" style="border-color:rgba(255, 51, 102, 0.4);">
+        <span class="app-tile-icon">⚔️</span>
+        <div>
+          <div class="app-tile-title" style="color:#ff3366;">Adversarial Arena</div>
+          <div class="app-tile-desc">AI Deepfake Warp, 2D Mask, OLED Replay & FGSM Defense</div>
+        </div>
+      </a>
+      <a href="/mesh" class="app-tile" style="border-color:rgba(0, 243, 255, 0.4);">
+        <span class="app-tile-icon">🌐</span>
+        <div>
+          <div class="app-tile-title" style="color:#00f3ff;">Global Campus Mesh</div>
+          <div class="app-tile-desc">Multi-Facility P2P Byzantine State Sync & Edge Telemetry</div>
+        </div>
+      </a>
       <a href="/studio" class="app-tile" style="border-color:rgba(0, 243, 255, 0.4);">
         <span class="app-tile-icon">🧠</span>
         <div>

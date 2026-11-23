@@ -1496,6 +1496,42 @@ def api_vault_download(filename):
     return send_from_directory(snapshots_dir, filename, as_attachment=True)
 
 
+# ==========================================
+# MODULE 31: ADVERSARIAL ATTACK ARENA & DEFENSE
+# ==========================================
+@app.route('/adversarial')
+def adversarial_view():
+    stats = db.get_stats()
+    sample = liveness_lab.simulate_adversarial_attack(attack_type="DEEPFAKE_WARP")
+    return render_template('adversarial.html', stats=stats, sample=sample)
+
+@app.route('/api/adversarial/simulate', methods=['POST'])
+def api_adversarial_simulate():
+    data = request.get_json() or {}
+    attack_type = data.get('attack_type', 'DEEPFAKE_WARP')
+    res = liveness_lab.simulate_adversarial_attack(attack_type=attack_type)
+    return jsonify(res)
+
+
+# ==========================================
+# MODULE 32: MULTI-CAMPUS GLOBAL MESH & P2P SYNC
+# ==========================================
+@app.route('/mesh')
+def mesh_view():
+    stats = db.get_stats()
+    mesh = db.get_mesh_network_telemetry()
+    return render_template('mesh.html', stats=stats, mesh=mesh)
+
+@app.route('/api/mesh')
+def api_mesh():
+    return jsonify(db.get_mesh_network_telemetry())
+
+@app.route('/api/mesh/sync', methods=['POST'])
+def api_mesh_sync():
+    res = db.trigger_mesh_sync()
+    return jsonify(res)
+
+
 
 
 if __name__ == '__main__':
