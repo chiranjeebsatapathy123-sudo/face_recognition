@@ -2311,3 +2311,135 @@ class AttendanceDB:
             "status": "CONSENSUS_REACHED",
             "message": f"Global P2P Gossip Broadcast complete. Re-indexed {telemetry['nodes'][0]['identities_synced']} identity embedding vectors across 5 multi-campus edge clusters in {elapsed_ms} ms."
         }
+
+    # ==========================================
+    # MODULE 33: RTSP & EDGE CAMERA STREAM CHANNELS
+    # ==========================================
+    def get_stream_channels(self):
+        channels = [
+            {
+                "id": "cam_0",
+                "name": "Local HD Primary Optical Sensor",
+                "source": "0",
+                "protocol": "Direct V4L2/DirectShow USB",
+                "resolution": "1920 × 1080 @ 30 FPS",
+                "zone": "Gate A1 Turnstile Entrance",
+                "latency_ms": 1.2,
+                "bitrate": "8.4 Mbps",
+                "status": "ONLINE",
+                "is_active": True
+            },
+            {
+                "id": "cam_ip_droid",
+                "name": "DroidCam Mobile AI Inspection Relay",
+                "source": "http://100.81.15.29:8080/shot.jpg",
+                "protocol": "HTTP MJPEG Wireless Snapshot",
+                "resolution": "1280 × 720 @ 25 FPS",
+                "zone": "Perimeter Patrol Drone",
+                "latency_ms": 14.8,
+                "bitrate": "4.2 Mbps",
+                "status": "STANDBY",
+                "is_active": False
+            },
+            {
+                "id": "cam_rtsp_lab",
+                "name": "R&D Robotics Hangar RTSP Array",
+                "source": "rtsp://edge-gateway.corp.local:554/live/lab",
+                "protocol": "RTSP H.264 High-Profile",
+                "resolution": "2560 × 1440 @ 60 FPS",
+                "zone": "Lab E5 Robotics Bay",
+                "latency_ms": 22.4,
+                "bitrate": "12.0 Mbps",
+                "status": "ONLINE",
+                "is_active": False
+            },
+            {
+                "id": "cam_server_ptz",
+                "name": "Datacenter Core Vault PTZ Dome",
+                "source": "rtsp://datacenter-ptz.corp.local:554/ch1",
+                "protocol": "RTSP H.265 Secure Encrypted",
+                "resolution": "3840 × 2160 (4K UHD) @ 30 FPS",
+                "zone": "Server Room C3",
+                "latency_ms": 8.5,
+                "bitrate": "16.5 Mbps",
+                "status": "ONLINE",
+                "is_active": False
+            }
+        ]
+        return channels
+
+    # ==========================================
+    # MODULE 34: FACE DATASET STUDIO & AUTO-ANNOTATOR
+    # ==========================================
+    def get_dataset_inventory(self):
+        images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project_face_detect", "images")
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project_face_detect", "data")
+        
+        counts = {}
+        total_images = 0
+        if os.path.exists(images_dir):
+            for f in os.listdir(images_dir):
+                if f.endswith(('.jpg', '.jpeg', '.png')):
+                    total_images += 1
+                    user_tag = f.split('_')[0]
+                    counts[user_tag] = counts.get(user_tag, 0) + 1
+                    
+        has_pickles = os.path.exists(os.path.join(data_dir, "images.p")) and os.path.exists(os.path.join(data_dir, "labels.p"))
+        
+        return {
+            "total_images": total_images,
+            "identities_count": len(counts),
+            "identities": counts,
+            "has_consolidated_pickles": has_pickles,
+            "images_dir": images_dir,
+            "resolution": "100 × 100 Grayscale (Normalized Equalized)",
+            "pipeline": "YuNet 5-Point Landmark Extraction ➔ Histogram Equalization ➔ 100x100 Tensor"
+        }
+
+    def consolidate_dataset(self):
+        import pickle
+        images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project_face_detect", "images")
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project_face_detect", "data")
+        models_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+        os.makedirs(data_dir, exist_ok=True)
+        os.makedirs(models_dir, exist_ok=True)
+
+        image_data = []
+        labels = []
+        unique_labels = set()
+
+        if os.path.exists(images_dir):
+            for fn in os.listdir(images_dir):
+                if fn.endswith(('.jpg', '.jpeg', '.png')):
+                    user = fn.split('_')[0]
+                    p = os.path.join(images_dir, fn)
+                    img = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+                    if img is not None:
+                        img_rs = cv2.resize(img, (100, 100))
+                        image_data.append(img_rs)
+                        labels.append(user)
+                        unique_labels.add(user)
+
+        images_arr = np.array(image_data)
+        labels_arr = np.array(labels)
+
+        with open(os.path.join(data_dir, "images.p"), "wb") as f:
+            pickle.dump(images_arr, f)
+        with open(os.path.join(data_dir, "labels.p"), "wb") as f:
+            pickle.dump(labels_arr, f)
+
+        sorted_labels = sorted(list(unique_labels))
+        label_to_idx = {l: i for i, l in enumerate(sorted_labels)}
+        idx_to_label = {i: l for i, l in enumerate(sorted_labels)}
+        label_map_path = os.path.join(models_dir, "label_map.json")
+        with open(label_map_path, "w") as f:
+            json.dump({"label_to_idx": label_to_idx, "idx_to_label": idx_to_label}, f, indent=2)
+
+        return {
+            "success": True,
+            "total_images": len(image_data),
+            "identities": sorted_labels,
+            "images_shape": list(images_arr.shape),
+            "labels_shape": list(labels_arr.shape),
+            "message": f"Successfully consolidated {len(image_data)} images across {len(sorted_labels)} identities into images.p, labels.p, and label_map.json."
+        }

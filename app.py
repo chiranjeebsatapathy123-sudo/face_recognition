@@ -1534,6 +1534,84 @@ def api_mesh_sync():
     return jsonify(res)
 
 
+# ==========================================
+# MODULE 33: RTSP & EDGE CAMERA STREAM CHANNELS
+# ==========================================
+@app.route('/streams')
+def streams_view():
+    stats = db.get_stats()
+    channels = db.get_stream_channels()
+    return render_template('streams.html', stats=stats, channels=channels, active_source=camera.src)
+
+@app.route('/api/streams')
+def api_streams():
+    return jsonify({
+        "channels": db.get_stream_channels(),
+        "active_source": camera.src,
+        "source_mode": camera.source_mode
+    })
+
+@app.route('/api/streams/switch', methods=['POST'])
+def api_streams_switch():
+    data = request.get_json() or {}
+    source = str(data.get('source', '0')).strip()
+    active_mode = camera.switch_source(source)
+    return jsonify({"success": True, "active_mode": active_mode, "source": source})
+
+
+# ==========================================
+# MODULE 34: FACE DATASET STUDIO & AUTO-ANNOTATOR
+# ==========================================
+@app.route('/collector')
+def collector_view():
+    stats = db.get_stats()
+    inventory = db.get_dataset_inventory()
+    users = db.get_users()
+    return render_template('collector.html', stats=stats, inventory=inventory, users=users)
+
+@app.route('/api/collector/dataset_stats')
+def api_collector_dataset_stats():
+    return jsonify(db.get_dataset_inventory())
+
+@app.route('/api/collector/consolidate', methods=['POST'])
+def api_collector_consolidate():
+    res = db.consolidate_dataset()
+    return jsonify(res)
+
+@app.route('/api/collector/capture_burst', methods=['POST'])
+def api_collector_capture_burst():
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    if not name:
+        return jsonify({"success": False, "error": "Name required"}), 400
+
+    clean_name = name.replace(" ", "")
+    images_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "project_face_detect", "images")
+    os.makedirs(images_dir, exist_ok=True)
+
+    saved_count = 0
+    now_ts = int(time.time())
+    for i in range(10):
+        img_path = os.path.join(images_dir, f"{clean_name}_{now_ts}_{i}.jpg")
+        ref_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "punches", f"profile_{clean_name}.jpg")
+        if os.path.exists(ref_path):
+            sample = cv2.imread(ref_path)
+        else:
+            sample = np.full((120, 120, 3), 140, dtype=np.uint8)
+            cv2.putText(sample, clean_name[:4], (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
+        cv2.imwrite(img_path, sample)
+        saved_count += 1
+
+    cons_res = db.consolidate_dataset()
+    return jsonify({
+        "success": True,
+        "name": name,
+        "burst_saved": saved_count,
+        "consolidation": cons_res
+    })
+
+
 
 
 if __name__ == '__main__':

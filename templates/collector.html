@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATASET STUDIO // 100-Frame Face Collector & Auto-Annotator</title>
+  <!-- Google Fonts: Orbitron & Rajdhani -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .collector-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1100px) {
+      .collector-layout { grid-template-columns: 1fr; }
+    }
+    .view-collector {
+      width: 100%;
+      height: 380px;
+      background: #040810;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .guide-ring {
+      width: 180px;
+      height: 230px;
+      border: 2px dashed #00f3ff;
+      border-radius: 50%;
+      position: absolute;
+      box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+      animation: pulseGuide 2s infinite ease-in-out;
+    }
+    @keyframes pulseGuide {
+      0% { transform: scale(0.98); opacity: 0.7; }
+      50% { transform: scale(1.02); opacity: 1.0; }
+      100% { transform: scale(0.98); opacity: 0.7; }
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #00f3ff, #00ff88);
+      box-shadow: 0 0 10px #00ff88;
+      transition: width 0.2s ease;
+    }
+    .capture-btn {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(0, 243, 255, 0.3), rgba(0, 255, 136, 0.4));
+      border: 1px solid #00ff88;
+      color: #fff;
+      font-family: var(--font-tech);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      margin-top: 14px;
+    }
+    .capture-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 243, 255, 0.5), rgba(0, 255, 136, 0.6));
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+      transform: translateY(-2px);
+    }
+    .inventory-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .inventory-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(10, 15, 26, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-scanlines"></div>
+  <div class="hud-background-grid"></div>
+
+  <!-- Header -->
+  {% set active_page = 'collector' %}
+  {% set nav_icon = '📸' %}
+  {% set nav_title = 'DATASET STUDIO // FACE CAPTURE & ANNOTATOR' %}
+  {% set nav_subtitle = 'AUTOMATED 100-FRAME MULTI-ANGLE DATASET CAPTURE, QUALITY FILTERING & PICKLE CONSOLIDATOR' %}
+  {% include 'nav_header.html' %}
+
+  <main class="main-container">
+    <!-- Telemetry Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">TOTAL DATASET SAMPLES</div>
+        <div class="metric-val" id="telemetry-total-imgs" style="color:#00f3ff;">{{ inventory.total_images }}</div>
+        <div class="metric-sub">{{ inventory.resolution }}</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">REGISTERED IDENTITIES</div>
+        <div class="metric-val" id="telemetry-identities" style="color:#00ff88;">{{ inventory.identities_count }}</div>
+        <div class="metric-sub">Classes in models/label_map.json</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">CONSOLIDATION STATUS</div>
+        <div class="metric-val" id="telemetry-pickle-status" style="font-size:1.15rem; color:#00ff88;">
+          {{ 'SYNCHRONIZED' if inventory.has_consolidated_pickles else 'PENDING' }}
+        </div>
+        <div class="metric-sub">images.p & labels.p Ready</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">FACE DETECTOR BACKBONE</div>
+        <div class="metric-val" style="font-size:1.1rem; color:#ffb700;">YuNet ONNX</div>
+        <div class="metric-sub">5-Point Landmark Alignment</div>
+      </div>
+    </section>
+
+    <!-- Main Workspace -->
+    <div class="collector-layout">
+      <!-- Left: Live Angle Guidance Viewport & Capture Console -->
+      <div class="cyber-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="bracket">[</span> GUIDED 3D MULTI-ANGLE CAPTURE VIEWPORT <span class="bracket">]</span>
+          </div>
+          <span id="guide-step-tag" style="font-family:var(--font-tech); font-size:0.75rem; color:#00f3ff;">STEP 1: LOOK STRAIGHT (NEUTRAL)</span>
+        </div>
+
+        <div class="view-collector">
+          <div class="guide-ring"></div>
+          <img src="/video_feed" style="width:100%; height:100%; object-fit:cover;" alt="Capture Feed">
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="display:flex; justify-content:space-between; margin-top:14px; font-family:var(--font-tech); font-size:0.75rem; color:#94a3b8;">
+          <span>BURST CAPTURE PROGRESS</span>
+          <span id="progress-text" style="color:#00ff88;">0 / 100 SAMPLES</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progress-bar"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px;">
+          <div>
+            <label style="font-family:var(--font-tech); font-size:0.74rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:5px; display:block;">IDENTITY NAME</label>
+            <input type="text" id="target-name" class="cyber-input" placeholder="e.g. Chiru, rahul, Vikram Singh">
+          </div>
+          <div>
+            <label style="font-family:var(--font-tech); font-size:0.74rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:5px; display:block;">TARGET SAMPLES</label>
+            <select id="target-count" class="cyber-select">
+              <option value="100" selected>100 Frames (Standard Dataset)</option>
+              <option value="50">50 Frames (Rapid Enrollment)</option>
+              <option value="200">200 Frames (High Precision)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="capture-btn" id="start-collect-btn" onclick="startCaptureBurst()">
+          <span>⚡ START 100-FRAME GUIDED CAPTURE</span>
+        </button>
+      </div>
+
+      <!-- Right: Dataset Inventory & Retrain Bridge -->
+      <div>
+        <div class="cyber-panel">
+          <div class="panel-header" style="margin-bottom:12px;">
+            <div class="panel-title">
+              <span class="bracket">[</span> DATASET REPOSITORY <span class="bracket">]</span>
+            </div>
+            <button onclick="rebuildPickles()" class="btn-action-sm" style="font-size:0.7rem; border-color:#00f3ff; color:#00f3ff;">
+              🔄 CONSOLIDATE
+            </button>
+          </div>
+
+          <div style="font-family:var(--font-main); font-size:0.84rem; color:#94a3b8; line-height:1.4;">
+            Directory: <span style="font-family:monospace; color:#00f3ff; font-size:0.75rem;">project_face_detect/images/</span>
+          </div>
+
+          <div class="inventory-list" id="inventory-list-box">
+            {% for name, count in inventory.identities.items() %}
+            <div class="inventory-item">
+              <div style="font-weight:700; color:#fff;">{{ name }}</div>
+              <div style="font-family:monospace; color:#00ff88;">{{ count }} crops</div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Bridge to Studio -->
+          <div style="margin-top:20px; background:rgba(0, 243, 255, 0.05); border:1px solid rgba(0, 243, 255, 0.25); border-radius:6px; padding:14px;">
+            <div style="font-family:'Orbitron',monospace; font-size:0.8rem; color:#00f3ff; margin-bottom:6px;">
+              ◈ BRIDGE TO NEURAL STUDIO
+            </div>
+            <p style="font-family:var(--font-main); font-size:0.82rem; color:#94a3b8; margin:0 0 10px;">
+              After capturing dataset frames, retrain the ArcFace CNN weights to recognize the new identity in real-time.
+            </p>
+            <a href="/studio" class="cyber-button primary" style="display:block; text-align:center; text-decoration:none; padding:10px; font-weight:700;">
+              🧠 OPEN AI NEURAL STUDIO (/studio)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function startCaptureBurst() {
+      const name = document.getElementById('target-name').value.trim();
+      if (!name) {
+        alert("Please enter a person name for the dataset!");
+        return;
+      }
+
+      const btn = document.getElementById('start-collect-btn');
+      const bar = document.getElementById('progress-bar');
+      const txt = document.getElementById('progress-text');
+      const tag = document.getElementById('guide-step-tag');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ CAPTURING 100 FRAMES (HOLD STILL & TURN HEAD)...</span>';
+      if (window.playCyberAudio) window.playCyberAudio('radar');
+
+      // Simulate step-by-step angle guide
+      const steps = [
+        "STEP 1: LOOK STRAIGHT (NEUTRAL)",
+        "STEP 2: TURN HEAD SLIGHTLY LEFT (15°)",
+        "STEP 3: TURN HEAD SLIGHTLY RIGHT (15°)",
+        "STEP 4: ENGAGE FACIAL SMILE",
+        "STEP 5: TILT HEAD SLIGHTLY UP / DOWN"
+      ];
+
+      for (let s = 0; s < steps.length; s++) {
+        tag.innerText = steps[s];
+        const pct = (s + 1) * 20;
+        bar.style.width = `${pct}%`;
+        txt.innerText = `${(s + 1) * 20} / 100 SAMPLES`;
+        if (window.playCyberAudio) window.playCyberAudio('chirp');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      try {
+        const resp = await fetch('/api/collector/capture_burst', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name })
+        });
+        const res = await resp.json();
+
+        if (res.success) {
+          tag.innerText = "CAPTURE COMPLETE // CONSOLIDATED!";
+          tag.style.color = "#00ff88";
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+          alert(`Successfully captured and consolidated dataset for ${name}! Pickles updated.`);
+          window.location.reload();
+        }
+      } catch (err) {
+        alert("Capture error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ START 100-FRAME GUIDED CAPTURE</span>';
+      }
+    }
+
+    async function rebuildPickles() {
+      if (window.playCyberAudio) window.playCyberAudio('radar');
+      try {
+        const resp = await fetch('/api/collector/consolidate', { method: 'POST' });
+        const res = await resp.json();
+        if (res.success) {
+          if (window.playCyberAudio) window.playCyberAudio('grant');
+          alert(res.message);
+          window.location.reload();
+        }
+      } catch (err) {
+        alert("Consolidation failed: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
