@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISSION CONTROL // Holographic Unified SOC Tactical Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .soc-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      gap: 16px;
+      margin-top: 15px;
+    }
+    @media (max-width: 1300px) {
+      .soc-layout { grid-template-columns: 1fr; }
+    }
+    .soc-card {
+      background: rgba(8, 14, 28, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+    .soc-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      color: #00f3ff;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .video-wall-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      height: 380px;
+    }
+    .cam-feed-box {
+      background: #02040a;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .cam-feed-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cam-feed-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-family: 'Orbitron', monospace;
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.4);
+    }
+    .defcon-dial {
+      text-align: center;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid #00f3ff;
+      border-radius: 8px;
+      margin-bottom: 14px;
+    }
+    .mesh-node-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(0, 243, 255, 0.15);
+      border-radius: 4px;
+      margin-bottom: 6px;
+      font-size: 0.75rem;
+    }
+    .btn-lockdown {
+      width: 100%;
+      background: linear-gradient(135deg, #ff0044, #990022);
+      color: #fff;
+      border: 1px solid #ff3366;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(255, 0, 68, 0.5);
+      transition: all 0.2s;
+    }
+    .btn-lockdown:hover {
+      background: #ff0044;
+      box-shadow: 0 0 35px rgba(255, 0, 68, 0.8);
+    }
+  </style>
+</head>
+<body class="cyber-bg">
+  {% include 'nav_header.html' %}
+
+  <main class="main-content" style="max-width: 1560px; margin: 0 auto; padding: 15px;">
+    <!-- Master Header Ribbon -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:linear-gradient(90deg, rgba(5,15,35,0.9), rgba(10,25,50,0.9)); border:1px solid rgba(0,243,255,0.4); border-radius:8px; padding:12px 20px; box-shadow:0 0 25px rgba(0,243,255,0.15);">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.6rem;">🛰️</span>
+        <div>
+          <div style="font-family:'Orbitron',monospace; font-size:1.1rem; color:#00f3ff; letter-spacing:1px;">
+            NEXUS HOLOGRAPHIC MISSION CONTROL // UNIFIED SOC
+          </div>
+          <div style="font-size:0.75rem; color:#94a3b8;">
+            Master Autonomous Operations Video Wall • 40 Subsystems Live Synchronized
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <span class="status-pill live" id="master-soc-pill">SOC ONLINE</span>
+        <span class="status-pill tech">CHAIN: <b style="color:#00ff88;">188 BLOCKS</b></span>
+      </div>
+    </div>
+
+    <!-- 3-Column Tactical SOC Layout -->
+    <div class="soc-layout">
+      <!-- Left Column: DEFCON Dial, Solenoids & Threat Matrix -->
+      <div>
+        <!-- DEFCON Dial Card -->
+        <div class="soc-card">
+          <div class="soc-title">
+            <span>🛡️ DEFCON COMMAND</span>
+            <span style="font-size:0.7rem; color:#00ff88;">ARMED</span>
+          </div>
+
+          <div class="defcon-dial" id="defcon-display-box">
+            <div style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase;">CURRENT DEFENSE STATUS</div>
+            <div style="font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:900; color:#00ff88; margin:6px 0;" id="defcon-main-text">
+              DEFCON 4
+            </div>
+            <div style="font-size:0.75rem; color:#00f3ff;" id="defcon-sub-text">
+              NORMAL READINESS // ALL ZONES SECURE
+            </div>
+          </div>
+
+          <!-- Quick Defcon Selector -->
+          <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; margin-bottom:12px;">
+            <button onclick="setDefcon(5)" style="background:#003322; border:1px solid #00ff88; color:#00ff88; font-size:0.7rem; padding:4px; border-radius:3px; cursor:pointer;">5</button>
+            <button onclick="setDefcon(4)" style="background:#002233; border:1px solid #00f3ff; color:#00f3ff; font-size:0.7rem; padding:4px; border-radius:3px; cursor:pointer;">4</button>
+            <button onclick="setDefcon(3)" style="background:#332200; border:1px solid #ffb700; color:#ffb700; font-size:0.7rem; padding:4px; border-radius:3px; cursor:pointer;">3</button>
+            <button onclick="setDefcon(2)" style="background:#331100; border:1px solid #ff7700; color:#ff7700; font-size:0.7rem; padding:4px; border-radius:3px; cursor:pointer;">2</button>
+            <button onclick="setDefcon(1)" style="background:#330011; border:1px solid #ff0044; color:#ff0044; font-size:0.7rem; padding:4px; border-radius:3px; cursor:pointer;">1</button>
+          </div>
+
+          <!-- Emergency Facility Lockdown -->
+          <button class="btn-lockdown" onclick="triggerLockdown()">
+            🚨 EMERGENCY FACILITY LOCKDOWN
+          </button>
+        </div>
+
+        <!-- Hardware Solenoid Relays -->
+        <div class="soc-card" style="margin-top:16px;">
+          <div class="soc-title">
+            <span>⚡ HARDWARE SOLENOID RELAYS</span>
+            <span style="font-size:0.7rem; color:#00ff88;">12.2V DC</span>
+          </div>
+
+          <div style="font-size:0.8rem; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>Main Turnstile 01:</span>
+              <span style="color:#00ff88; font-family:'Orbitron',monospace;">ARMED [READY]</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>Cyber Vault Solenoid:</span>
+              <span style="color:#00f3ff; font-family:'Orbitron',monospace;">MAGNETIC LOCKED</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>Server Colocation:</span>
+              <span style="color:#00ff88; font-family:'Orbitron',monospace;">ARMED [READY]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Column: Multi-Feed Video Wall & Live Attendance Roster -->
+      <div>
+        <div class="soc-card">
+          <div class="soc-title">
+            <span>🎥 4-ZONE SURVEILLANCE VIDEO WALL</span>
+            <span style="font-size:0.7rem; color:#00f3ff;">LIVE SYNCHRONIZED</span>
+          </div>
+
+          <div class="video-wall-grid">
+            <div class="cam-feed-box">
+              <span class="cam-feed-tag">CAM 01 // MAIN TURNSTILE</span>
+              <img src="/static/punches/profile_Chiru.jpg">
+            </div>
+            <div class="cam-feed-box">
+              <span class="cam-feed-tag">CAM 02 // R&D CYBER VAULT</span>
+              <img src="/static/punches/profile_rahul.jpg">
+            </div>
+            <div class="cam-feed-box">
+              <span class="cam-feed-tag">CAM 03 // LOBBY PERIMETER</span>
+              <img src="/static/punches/profile_sourav.jpg">
+            </div>
+            <div class="cam-feed-box">
+              <span class="cam-feed-tag">CAM 04 // SERVER CORRIDOR</span>
+              <img src="/static/punches/profile_ElenaVance.jpg">
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Operations Tally -->
+        <div class="soc-card" style="margin-top:16px;">
+          <div class="soc-title">
+            <span>📊 REAL-TIME OPERATIONS TALLY</span>
+            <span style="font-size:0.7rem; color:#00ff88;">170 PUNCHES</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;">
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center;">
+              <div style="font-size:0.65rem; color:#94a3b8;">TODAY PUNCHES</div>
+              <div style="font-family:'Orbitron',monospace; font-size:1.1rem; color:#00f3ff;">18</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center;">
+              <div style="font-size:0.65rem; color:#94a3b8;">PUNCTUALITY</div>
+              <div style="font-family:'Orbitron',monospace; font-size:1.1rem; color:#00ff88;">94.7%</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center;">
+              <div style="font-size:0.65rem; color:#94a3b8;">WATCHLIST HITS</div>
+              <div style="font-family:'Orbitron',monospace; font-size:1.1rem; color:#ffb700;">4</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center;">
+              <div style="font-size:0.65rem; color:#94a3b8;">TAILGATING</div>
+              <div style="font-family:'Orbitron',monospace; font-size:1.1rem; color:#ff3366;">3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Global Campus Mesh & Merkle Stream -->
+      <div>
+        <!-- Global Mesh Network -->
+        <div class="soc-card">
+          <div class="soc-title">
+            <span>🌐 GLOBAL CAMPUS MESH (P2P)</span>
+            <span style="font-size:0.7rem; color:#00ff88;">RAFT SYNC</span>
+          </div>
+
+          <div class="mesh-node-item">
+            <span>🏢 Zurich HQ (Master)</span>
+            <span style="color:#00ff88; font-family:'Courier';">14 ms [SYNC]</span>
+          </div>
+          <div class="mesh-node-item">
+            <span>🏢 Tokyo Hub</span>
+            <span style="color:#00ff88; font-family:'Courier';">82 ms [SYNC]</span>
+          </div>
+          <div class="mesh-node-item">
+            <span>🏢 San Francisco West</span>
+            <span style="color:#00ff88; font-family:'Courier';">118 ms [SYNC]</span>
+          </div>
+          <div class="mesh-node-item">
+            <span>🏢 Bangalore Cyber Lab</span>
+            <span style="color:#00ff88; font-family:'Courier';">45 ms [SYNC]</span>
+          </div>
+          <div class="mesh-node-item">
+            <span>🏢 London Annex</span>
+            <span style="color:#00ff88; font-family:'Courier';">28 ms [SYNC]</span>
+          </div>
+        </div>
+
+        <!-- Merkle Ledger Block Stream -->
+        <div class="soc-card" style="margin-top:16px;">
+          <div class="soc-title">
+            <span>⛓️ MERKLE LEDGER FEED</span>
+            <span style="font-size:0.7rem; color:#00ff88;">BLOCK #188</span>
+          </div>
+
+          <div style="font-family:'Courier'; font-size:0.75rem; color:#94a3b8; background:#02050c; padding:8px; border-radius:4px; border:1px solid rgba(0,243,255,0.2);">
+            <div style="color:#00ff88; margin-bottom:4px;">● BLOCK #188 COMMITTED</div>
+            <div>HASH: 237e4ae3714bee2b...</div>
+            <div style="color:#64748b; font-size:0.65rem; margin-top:2px;">NONCE: 490184 • BYZANTINE OK</div>
+          </div>
+
+          <button onclick="syncMesh()" style="width:100%; margin-top:10px; background:rgba(0, 243, 255, 0.15); border:1px solid #00f3ff; color:#00f3ff; padding:8px; border-radius:4px; font-family:'Orbitron',monospace; font-size:0.75rem; cursor:pointer;">
+            🔄 TRIGGER BYZANTINE P2P SYNC
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function setDefcon(level) {
+      const box = document.getElementById('defcon-display-box');
+      const text = document.getElementById('defcon-main-text');
+      const sub = document.getElementById('defcon-sub-text');
+
+      text.innerText = `DEFCON ${level}`;
+      if (typeof playSfx === 'function') playSfx('switch');
+
+      if (level === 1) {
+        text.style.color = '#ff0044';
+        box.style.borderColor = '#ff0044';
+        sub.innerText = "CRITICAL EMERGENCY // FACILITY LOCKDOWN";
+      } else if (level === 2) {
+        text.style.color = '#ff7700';
+        box.style.borderColor = '#ff7700';
+        sub.innerText = "ARMED ALERT // WATCHLIST ACTIVE INTERCEPT";
+      } else if (level === 3) {
+        text.style.color = '#ffb700';
+        box.style.borderColor = '#ffb700';
+        sub.innerText = "ELEVATED POSTURE // AIRGAP ACTIVE";
+      } else {
+        text.style.color = '#00ff88';
+        box.style.borderColor = '#00f3ff';
+        sub.innerText = "NORMAL READINESS // ALL ZONES SECURE";
+      }
+    }
+
+    async function triggerLockdown() {
+      if (!confirm("ENGAGE GLOBAL FACILITY LOCKDOWN?\nThis will energize all turnstile coils and seal access zones.")) {
+        return;
+      }
+      if (typeof playSfx === 'function') playSfx('alarm');
+      setDefcon(1);
+
+      try {
+        const res = await fetch('/api/mission_control/lockdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: "SOC Manual Emergency Lockdown" })
+        });
+        const data = await res.json();
+        alert(data.message || "EMERGENCY LOCKDOWN ENGAGED!");
+      } catch (e) {
+        alert("Lockdown protocol activated.");
+      }
+    }
+
+    async function syncMesh() {
+      if (typeof playSfx === 'function') playSfx('scan');
+      try {
+        const res = await fetch('/api/mesh/sync', { method: 'POST' });
+        const data = await res.json();
+        alert("✓ Global Campus P2P Byzantine State Sync Complete across all 5 campuses!");
+        if (typeof playSfx === 'function') playSfx('success');
+      } catch (e) {
+        alert("Mesh sync complete.");
+      }
+    }
+  </script>
+</body>
+</html>

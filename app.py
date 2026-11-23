@@ -1824,6 +1824,60 @@ def api_neural_hud_infer_frame():
     return jsonify(result)
 
 
+# ==========================================
+# MODULE 39: BIOMETRIC FACIAL AGING STUDIO
+# ==========================================
+@app.route('/aging')
+def aging_view():
+    stats = db.get_stats()
+    users = db.get_users()
+    return render_template('aging.html', stats=stats, users=users, active_page='aging')
+
+@app.route('/api/aging/simulate', methods=['POST'])
+def api_aging_simulate():
+    from attendance_engine.aging import biometric_aging_engine
+    data = request.get_json() or {}
+    person = data.get('person', 'Chiru').replace(" ", "")
+    target_age = int(data.get('target_age', 60))
+
+    ref_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "punches", f"profile_{person}.jpg")
+    if not os.path.exists(ref_path):
+        ref_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "punches", "profile_Chiru.jpg")
+
+    img = cv2.imread(ref_path)
+    if img is None:
+        img = np.full((200, 200, 3), 128, dtype=np.uint8)
+
+    res = biometric_aging_engine.simulate_age_progression(img, target_age=target_age)
+    return jsonify(res)
+
+
+# ==========================================
+# MODULE 40: HOLOGRAPHIC MISSION CONTROL & UNIFIED SOC
+# ==========================================
+@app.route('/mission_control')
+def mission_control_view():
+    from attendance_engine.mission_control import MissionControlEngine
+    soc_engine = MissionControlEngine(db)
+    soc_data = soc_engine.get_unified_soc_telemetry()
+    return render_template('mission_control.html', stats=soc_data["kpi"], soc=soc_data, active_page='mission_control')
+
+@app.route('/api/mission_control/telemetry')
+def api_mission_control_telemetry():
+    from attendance_engine.mission_control import MissionControlEngine
+    soc_engine = MissionControlEngine(db)
+    return jsonify(soc_engine.get_unified_soc_telemetry())
+
+@app.route('/api/mission_control/lockdown', methods=['POST'])
+def api_mission_control_lockdown():
+    from attendance_engine.mission_control import MissionControlEngine
+    data = request.get_json() or {}
+    reason = data.get('reason', 'SOC Emergency Directive')
+    soc_engine = MissionControlEngine(db)
+    res = soc_engine.trigger_emergency_lockdown(reason=reason)
+    return jsonify(res)
+
+
 if __name__ == '__main__':
     print("=======================================================")
     print(" 🚀 3D CYBER BIOMETRIC ATTENDANCE SYSTEM RUNNING")

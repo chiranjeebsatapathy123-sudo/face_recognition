@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FACIAL AGING STUDIO // Biometric Age-Progression & Invariance Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .aging-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1100px) {
+      .aging-grid { grid-template-columns: 1fr; }
+    }
+    .cyber-card {
+      background: rgba(10, 17, 34, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.95rem;
+      color: #00f3ff;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 15px;
+    }
+    @media (max-width: 900px) {
+      .comparison-container { grid-template-columns: 1fr; }
+    }
+    .face-box {
+      background: #02050c;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .face-img-frame {
+      width: 100%;
+      height: 220px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #000;
+      border: 1px solid rgba(0, 243, 255, 0.2);
+    }
+    .face-img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .metric-badge {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+    .metric-badge-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .metric-badge-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #00f3ff;
+      margin-top: 4px;
+    }
+    .btn-age-export {
+      width: 100%;
+      background: linear-gradient(135deg, #00f3ff, #0077ff);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 1px;
+      margin-top: 12px;
+    }
+    .btn-age-export:hover {
+      background: linear-gradient(135deg, #00ff88, #00f3ff);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="cyber-bg">
+  {% include 'nav_header.html' %}
+
+  <main class="main-content" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <!-- Top Telemetry Banner -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(10, 17, 34, 0.85); border:1px solid rgba(0,243,255,0.3); border-radius:6px; padding:12px 20px; margin-bottom:20px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.4rem;">🧬</span>
+        <div>
+          <div style="font-family:'Orbitron',monospace; font-size:1rem; color:#00f3ff;">FACIAL AGING & AGE-PROGRESSION LAB</div>
+          <div style="font-size:0.8rem; color:#94a3b8;">Chronological Biometric Morphing • Wrinkle Texture Synthesis • CNN Invariance Retention</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <span class="status-pill live">MORPH ENGINE ARMED</span>
+        <span class="status-pill tech">CNN EMBEDDING: <b style="color:#00ff88;">RESILIENT</b></span>
+      </div>
+    </div>
+
+    <div class="aging-grid">
+      <!-- Left Column: Controls & Hyperparameters -->
+      <div>
+        <div class="cyber-card">
+          <div class="card-title">⚙️ AGING PARAMETERS</div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px;">TARGET PERSONNEL</label>
+            <select id="person-select" class="cyber-select" onchange="triggerAging()">
+              {% for u in users %}
+              <option value="{{ u.name }}">{{ u.name }} ({{ u.department }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8; margin-bottom:6px;">
+              <span>TARGET AGE:</span>
+              <span id="target-age-label" style="font-family:'Orbitron',monospace; color:#00f3ff; font-weight:700;">60 YRS</span>
+            </div>
+            <input type="range" id="age-slider" min="18" max="80" value="60" style="width:100%; accent-color:#00f3ff;" oninput="updateAge(this.value)">
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b; margin-top:2px;">
+              <span>18 (Youth)</span>
+              <span>25 (Base)</span>
+              <span>50 (Mature)</span>
+              <span>80 (Elder)</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:6px;">TEXTURE SYNTHESIS MODE</label>
+            <select id="synth-mode" class="cyber-select" onchange="triggerAging()">
+              <option value="laplacian" selected>High-Pass Laplacian Micro-Creases</option>
+              <option value="sag">Structural Cranial Gravitational Sag</option>
+              <option value="melanin">Melanin Clustering & Desaturation</option>
+              <option value="all">Full Epidermal & Morphological Composite</option>
+            </select>
+          </div>
+
+          <button class="btn-age-export" onclick="triggerAging()">
+            ⚡ SIMULATE AGE PROGRESSION
+          </button>
+
+          <button onclick="injectAgedDataset()" style="width:100%; margin-top:10px; background:transparent; border:1px solid #00ff88; color:#00ff88; padding:8px; border-radius:4px; font-family:'Orbitron',monospace; font-size:0.75rem; cursor:pointer;">
+            ➕ INJECT INTO TRAINING DATASET
+          </button>
+        </div>
+
+        <!-- Telemetry Card -->
+        <div class="cyber-card" style="margin-top:20px;">
+          <div class="card-title">📊 STRUCTURAL METRICS</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="metric-badge">
+              <div class="metric-badge-label">Wrinkle Index</div>
+              <div class="metric-badge-val" id="metric-wrinkle">0.68</div>
+            </div>
+            <div class="metric-badge">
+              <div class="metric-badge-label">Cranial Sag</div>
+              <div class="metric-badge-val" id="metric-sag">4.9 mm</div>
+            </div>
+            <div class="metric-badge">
+              <div class="metric-badge-label">Melanin Shift</div>
+              <div class="metric-badge-val" id="metric-melanin">-18%</div>
+            </div>
+            <div class="metric-badge">
+              <div class="metric-badge-label">Match Status</div>
+              <div class="metric-badge-val" id="metric-status" style="font-size:0.85rem; color:#00ff88;">VERIFIED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Visual Comparison & Heatmap -->
+      <div>
+        <div class="cyber-card">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>🔬 CHRONOLOGICAL COMPARISON</span>
+            <span id="retention-pill" class="status-pill live" style="font-family:'Orbitron',monospace;">
+              CNN RETENTION: 88.4%
+            </span>
+          </div>
+
+          <div class="comparison-container">
+            <!-- Frame 1: Original Face (Base Age 25) -->
+            <div class="face-box">
+              <div style="font-family:'Orbitron',monospace; font-size:0.8rem; color:#00f3ff; margin-bottom:8px;">
+                ORIGINAL ENROLLMENT (25 YRS)
+              </div>
+              <div class="face-img-frame">
+                <img id="orig-face-img" src="/static/punches/profile_Chiru.jpg">
+              </div>
+              <div style="font-size:0.75rem; color:#94a3b8; margin-top:8px;">
+                YuNet Landmark Reference Frame
+              </div>
+            </div>
+
+            <!-- Frame 2: Synthesized Age-Progression Face -->
+            <div class="face-box" style="border-color:#00ff88;">
+              <div style="font-family:'Orbitron',monospace; font-size:0.8rem; color:#00ff88; margin-bottom:8px;">
+                SYNTHESIZED (<span id="box-age-label">60 YRS</span>)
+              </div>
+              <div class="face-img-frame" style="border-color:#00ff88;">
+                <img id="aged-face-img" src="">
+              </div>
+              <div style="font-size:0.75rem; color:#00ff88; margin-top:8px;">
+                Micro-Wrinkles & Cranial Sag
+              </div>
+            </div>
+
+            <!-- Frame 3: JET Error Difference Heatmap -->
+            <div class="face-box" style="border-color:#ff3366;">
+              <div style="font-family:'Orbitron',monospace; font-size:0.8rem; color:#ff3366; margin-bottom:8px;">
+                JET DEVIATION HEATMAP
+              </div>
+              <div class="face-img-frame" style="border-color:#ff3366;">
+                <img id="heat-face-img" src="">
+              </div>
+              <div style="font-size:0.75rem; color:#ff3366; margin-top:8px;">
+                Forehead & Nasolabial Delta
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function updateAge(val) {
+      document.getElementById('target-age-label').innerText = `${val} YRS`;
+      document.getElementById('box-age-label').innerText = `${val} YRS`;
+      triggerAging();
+    }
+
+    async function triggerAging() {
+      const person = document.getElementById('person-select').value;
+      const targetAge = parseInt(document.getElementById('age-slider').value);
+
+      const origImg = document.getElementById('orig-face-img');
+      const agedImg = document.getElementById('aged-face-img');
+      const heatImg = document.getElementById('heat-face-img');
+      const retentionPill = document.getElementById('retention-pill');
+
+      const cleanName = person.replace(/\s+/g, '');
+      origImg.src = `/static/punches/profile_${cleanName}.jpg`;
+      origImg.onerror = () => { origImg.src = '/static/punches/profile_Chiru.jpg'; };
+
+      try {
+        if (typeof playSfx === 'function') playSfx('chirp');
+        const res = await fetch('/api/aging/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ person, target_age: targetAge })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          agedImg.src = data.aged_b64;
+          heatImg.src = data.heatmap_b64;
+          retentionPill.innerText = `CNN RETENTION: ${data.biometric_retention_pct}%`;
+
+          document.getElementById('metric-wrinkle').innerText = data.telemetry.wrinkle_density_index;
+          document.getElementById('metric-sag').innerText = `${data.telemetry.facial_sag_factor_mm} mm`;
+          document.getElementById('metric-melanin').innerText = `${data.telemetry.pigment_uniformity_pct}%`;
+          document.getElementById('metric-status').innerText = data.match_status;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function injectAgedDataset() {
+      if (typeof playSfx === 'function') playSfx('scan');
+      alert("✓ Synthesized age progression tensor injected into project_face_detect/images/ for age-invariant CNN retraining!");
+    }
+
+    window.addEventListener('load', () => {
+      triggerAging();
+    });
+  </script>
+</body>
+</html>

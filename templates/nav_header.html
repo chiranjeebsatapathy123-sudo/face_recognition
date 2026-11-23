@@ -42,8 +42,9 @@
 
       <!-- Forensics Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio', 'adversarial', 'collector', 'retrain', 'neural_hud'] else '' }}">🔬 Forensics ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['compare', 'liveness', 'search', 'dossier', 'graph', 'ledger', 'avatar', 'studio', 'adversarial', 'collector', 'retrain', 'neural_hud', 'aging'] else '' }}">🔬 Forensics ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/aging"><span class="drop-icon">🧬</span> Biometric Facial Aging Studio</a>
           <a href="/neural_hud"><span class="drop-icon">🔮</span> Neural Inference & HUD Sandbox</a>
           <a href="/retrain"><span class="drop-icon">🧠</span> Neural Retraining & Weights</a>
           <a href="/collector"><span class="drop-icon">📸</span> Face Dataset Studio & Auto-Annotator</a>
@@ -79,8 +80,9 @@
 
       <!-- Operations & HR Dropdown -->
       <div class="nav-dropdown">
-        <button class="nav-dropdown-btn {{ 'active' if active_page in ['shifts', 'analytics', 'records', 'report', 'idcard', 'notifications', 'forecast', 'vault', 'export_center'] else '' }}">📊 Ops & HR ▾</button>
+        <button class="nav-dropdown-btn {{ 'active' if active_page in ['shifts', 'analytics', 'records', 'report', 'idcard', 'notifications', 'forecast', 'vault', 'export_center', 'mission_control'] else '' }}">📊 Ops & HR ▾</button>
         <div class="nav-dropdown-menu">
+          <a href="/mission_control"><span class="drop-icon">🛰️</span> Mission Control & SOC Wall</a>
           <a href="/export_center"><span class="drop-icon">📜</span> Certified Export Center</a>
           <a href="/vault"><span class="drop-icon">🗄️</span> Cryptographic Vault & Recovery</a>
           <a href="/forecast"><span class="drop-icon">🔮</span> Predictive Attendance Forecast</a>
@@ -95,19 +97,33 @@
     </div>
 
     <div class="nav-group-right">
-      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (38) ▾</button>
+      <button class="nav-btn apps-launcher-btn" onclick="toggleAppsMatrix()">❖ Apps Matrix (40) ▾</button>
       <a href="/alerts" class="nav-btn alert-btn {{ 'active' if active_page == 'alerts' else '' }}">🚨 Alerts (<span id="alert-badge-count">{{ stats.alert_count_today if stats and stats.alert_count_today is defined else 0 }}</span>)</a>
       <a href="/api/export_csv" class="nav-btn export">📥 Export CSV</a>
     </div>
   </nav>
 
-  <!-- Mega-Menu Apps Matrix Drawer (All 38 modules) -->
+  <!-- Mega-Menu Apps Matrix Drawer (All 40 modules) -->
   <div id="apps-matrix-drawer" class="apps-matrix-drawer">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(0, 243, 255, 0.2); padding-bottom:10px;">
-      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (38 MODULES)</span>
+      <span style="font-family:'Orbitron',monospace; font-size:0.9rem; color:#00f3ff; letter-spacing:1px;">◈ NEXUS BIOMETRIC INTELLIGENCE APPS (40 MODULES)</span>
       <button onclick="toggleAppsMatrix()" style="background:transparent; border:none; color:#ff3366; font-size:1.1rem; cursor:pointer;">✕</button>
     </div>
     <div class="apps-grid">
+      <a href="/mission_control" class="app-tile" style="border-color:rgba(0, 243, 255, 0.7); background:rgba(0, 243, 255, 0.1);">
+        <span class="app-tile-icon">🛰️</span>
+        <div>
+          <div class="app-tile-title" style="color:#00f3ff;">Mission Control SOC</div>
+          <div class="app-tile-desc">Panoramic Security Ops Video Wall, DEFCON Command & Global Mesh</div>
+        </div>
+      </a>
+      <a href="/aging" class="app-tile" style="border-color:rgba(0, 255, 136, 0.7); background:rgba(0, 255, 136, 0.1);">
+        <span class="app-tile-icon">🧬</span>
+        <div>
+          <div class="app-tile-title" style="color:#00ff88;">Facial Aging Lab</div>
+          <div class="app-tile-desc">Chronological Morphing, Epidermal Wrinkle Synthesis & Invariance</div>
+        </div>
+      </a>
       <a href="/neural_hud" class="app-tile" style="border-color:rgba(0, 243, 255, 0.6); background:rgba(0, 243, 255, 0.08);">
         <span class="app-tile-icon">🔮</span>
         <div>
