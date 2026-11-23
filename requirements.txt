@@ -1,0 +1,31 @@
+# ==============================================================================
+# NEXUS 3.0: 3D Biometric Intelligence & Facial Recognition Attendance Platform
+# Requirements & Dependencies Specification
+# ==============================================================================
+
+# --- Core Computer Vision & Camera Pipeline ---
+opencv-python>=4.8.0.76         # YuNet DNN face detector, camera capture, HUD rendering & colormaps
+
+# --- Deep Learning & Neural Inference Engine ---
+torch>=2.0.0                    # FaceCNN PyTorch model, embedding projections, fine-tuning backprop
+torchvision>=0.15.0             # Image tensor transformations & vision utilities
+
+# --- Machine Learning & Mathematical Operations ---
+numpy>=1.24.0                   # High-performance tensor math, cosine distance, vector normalization
+scikit-learn>=1.3.0             # K-Nearest Neighbors (KNN) face matcher, metric spaces
+
+# --- Web Application & Telemetry Dashboard (30 Modules) ---
+Flask>=3.0.0                    # Web dashboard, REST APIs, multipart MJPEG video streaming
+Werkzeug>=3.0.0                 # WSGI web server utilities & HTTP routing
+Jinja2>=3.1.0                   # Template engine for futuristic cyber glassmorphism HUD views
+
+# --- 2FA Multi-Factor Badge & Image Processing ---
+qrcode[pil]>=7.4.2              # Dynamic 2FA QR code generation for badge scans
+Pillow>=10.0.0                  # Image processing backend for QR codes & snapshot encoding
+
+# --- Optional: Jupyter Research Notebooks (project_face_detect) ---
+# Uncomment below if running the experimental model training notebooks:
+# ipython>=8.12.0
+# jupyterlab>=4.0.0
+# matplotlib>=3.7.0
+# h5py>=3.8.0
