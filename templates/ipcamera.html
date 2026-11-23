@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IP CAMERA GATEWAY // Wireless Phone Sensor & 100-Frame Collector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .ipcam-grid {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    @media (max-width: 1100px) {
+      .ipcam-grid { grid-template-columns: 1fr; }
+    }
+    .cyber-card {
+      background: rgba(10, 17, 34, 0.85);
+      border: 1px solid rgba(0, 243, 255, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.95rem;
+      color: #00f3ff;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .cyber-input, .cyber-select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 4px;
+      color: #fff;
+      padding: 8px 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .btn-action {
+      width: 100%;
+      background: linear-gradient(135deg, #00f3ff, #0077ff);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      background: linear-gradient(135deg, #00ff88, #00f3ff);
+      transform: translateY(-2px);
+    }
+    .viewport-box {
+      width: 100%;
+      height: 440px;
+      background: #040810;
+      border: 1px solid rgba(0, 243, 255, 0.3);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hud-reticle {
+      width: 220px;
+      height: 220px;
+      border: 2px dashed rgba(0, 243, 255, 0.6);
+      border-radius: 8px;
+      position: absolute;
+      pointer-events: none;
+      animation: pulseBox 2s infinite ease-in-out;
+    }
+    @keyframes pulseBox {
+      0% { transform: scale(0.98); opacity: 0.7; }
+      50% { transform: scale(1.02); opacity: 1.0; }
+      100% { transform: scale(0.98); opacity: 0.7; }
+    }
+    .preset-chip {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(0, 243, 255, 0.2);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      cursor: pointer;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+    }
+    .preset-chip:hover {
+      border-color: #00f3ff;
+      color: #00f3ff;
+      background: rgba(0, 243, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="cyber-bg">
+  {% include 'nav_header.html' %}
+
+  <main class="main-content" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <!-- Status Banner -->
+    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(10, 17, 34, 0.85); border:1px solid rgba(0,243,255,0.3); border-radius:6px; padding:12px 20px; margin-bottom:20px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.4rem;">📱</span>
+        <div>
+          <div style="font-family:'Orbitron',monospace; font-size:1rem; color:#00f3ff;">WIRELESS PHONE SENSOR & IP WEBCAM GATEWAY</div>
+          <div style="font-size:0.8rem; color:#94a3b8;">Direct Web Evolution of project_face_detect/data_collect.ipynb • 100-Frame Autonomous Collector</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <span class="status-pill live" id="stream-status-pill">STREAM STANDBY</span>
+        <span class="status-pill tech">HAAR CASCADE: <b style="color:#00ff88;">LOADED</b></span>
+      </div>
+    </div>
+
+    <div class="ipcam-grid">
+      <!-- Left Column: Stream Configuration & 100-Frame Burst Collector -->
+      <div>
+        <div class="cyber-card">
+          <div class="card-title">📡 WIRELESS STREAM INGEST</div>
+
+          <div class="form-group">
+            <label>Saved Presets (From Notebooks)</label>
+            <div class="preset-chip" onclick="selectPreset('http://100.81.15.29:8080/shot.jpg')">
+              <span>📱 Phone IP Webcam (Data Collect)</span>
+              <span style="font-family:'Courier'; color:#00f3ff;">:8080</span>
+            </div>
+            <div class="preset-chip" onclick="selectPreset('http://100.71.51.221:8080/shot.jpg')">
+              <span>📱 Phone IP Webcam (Recognize)</span>
+              <span style="font-family:'Courier'; color:#00f3ff;">:8080</span>
+            </div>
+            <div class="preset-chip" onclick="selectPreset('http://192.168.29.64:4747/video')">
+              <span>📹 DroidCam WiFi Local Feed</span>
+              <span style="font-family:'Courier'; color:#00f3ff;">:4747</span>
+            </div>
+            <div class="preset-chip" onclick="selectPreset('local://synthetic_sensor')">
+              <span>🤖 Autonomous Cyber Face Sensor</span>
+              <span style="font-family:'Courier'; color:#00ff88;">LOCAL</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>IP Stream / Snapshot URL</label>
+            <input type="text" id="camera-url-input" class="cyber-input" value="http://100.81.15.29:8080/shot.jpg">
+          </div>
+
+          <div style="display:flex; gap:10px; margin-bottom:14px;">
+            <button onclick="pingCamera()" style="flex:1; background:rgba(0, 243, 255, 0.15); border:1px solid #00f3ff; color:#00f3ff; padding:8px; border-radius:4px; font-family:'Orbitron',monospace; font-size:0.75rem; cursor:pointer;">
+              ⚡ PING SENSOR
+            </button>
+            <button onclick="refreshLiveView()" style="flex:1; background:rgba(0, 255, 136, 0.15); border:1px solid #00ff88; color:#00ff88; padding:8px; border-radius:4px; font-family:'Orbitron',monospace; font-size:0.75rem; cursor:pointer;">
+              🔄 FETCH FRAME
+            </button>
+          </div>
+
+          <div id="ping-result-msg" style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px;">
+            Enter an Android IP Webcam or DroidCam URL above.
+          </div>
+        </div>
+
+        <!-- 100-Frame Burst Collector Card (data_collect.ipynb) -->
+        <div class="cyber-card" style="margin-top:20px; border-color:rgba(0, 255, 136, 0.35);">
+          <div class="card-title" style="color:#00ff88;">
+            <span>📸 100-FRAME BURST COLLECTOR</span>
+          </div>
+          <p style="font-size:0.8rem; color:#94a3b8; margin-top:0;">
+            Captures 100 face crops using Haar cascade, equalizes 100x100 tensors, saves to <code>project_face_detect/images/</code>, and consolidates.
+          </p>
+
+          <div class="form-group">
+            <label>Target Personnel Name</label>
+            <input type="text" id="target-name-input" class="cyber-input" value="Chiru" placeholder="e.g. Chiru, rahul, sourav">
+          </div>
+
+          <button class="btn-action" id="btn-collect-100" onclick="trigger100Burst()">
+            ⚡ CAPTURE 100 SAMPLES & CONSOLIDATE
+          </button>
+
+          <div id="collect-status-msg" style="margin-top:12px; font-size:0.8rem; color:#94a3b8; text-align:center;">
+            Ready to acquire 100 training tensors.
+          </div>
+
+          <div style="margin-top:14px; text-align:center;">
+            <a href="/retrain" style="font-family:'Orbitron',monospace; font-size:0.75rem; color:#00f3ff; text-decoration:none;">
+              ➔ GO TO NEURAL RETRAIN STUDIO
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Viewport Canvas & Telemetry -->
+      <div>
+        <div class="cyber-card">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>👁️ WIRELESS STREAM VIEWPORT</span>
+            <span style="font-size:0.75rem; color:#00ff88;" id="latency-telemetry">LATENCY: -- MS</span>
+          </div>
+
+          <div class="viewport-box">
+            <img id="live-stream-img" src="/static/punches/profile_Chiru.jpg" style="width:100%; height:100%; object-fit:contain;">
+            <div class="hud-reticle"></div>
+          </div>
+
+          <!-- Sensor KPI Footer -->
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:15px;">
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center; border:1px solid rgba(0,243,255,0.2);">
+              <div style="font-size:0.65rem; color:#94a3b8;">SENSOR PROTOCOL</div>
+              <div style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#00f3ff;">HTTP / MJPEG</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center; border:1px solid rgba(0,243,255,0.2);">
+              <div style="font-size:0.65rem; color:#94a3b8;">FRAME RESOLUTION</div>
+              <div style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#00ff88;">640 × 480</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center; border:1px solid rgba(0,243,255,0.2);">
+              <div style="font-size:0.65rem; color:#94a3b8;">FACE DETECTOR</div>
+              <div style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#ffb700;">HAAR CASCADE</div>
+            </div>
+            <div style="background:rgba(15,23,42,0.6); padding:8px; border-radius:4px; text-align:center; border:1px solid rgba(0,243,255,0.2);">
+              <div style="font-size:0.65rem; color:#94a3b8;">PREPROCESSING</div>
+              <div style="font-family:'Orbitron',monospace; font-size:0.85rem; color:#00f3ff;">100x100 EQUALIZED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function selectPreset(url) {
+      document.getElementById('camera-url-input').value = url;
+      if (typeof playSfx === 'function') playSfx('click');
+      pingCamera();
+    }
+
+    async function pingCamera() {
+      const url = document.getElementById('camera-url-input').value;
+      const msg = document.getElementById('ping-result-msg');
+      msg.innerHTML = "<span style='color:#00f3ff;'>Pinging sensor stream...</span>";
+
+      try {
+        if (typeof playSfx === 'function') playSfx('scan');
+        const res = await fetch('/api/ipcamera/ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        if (data.reachable) {
+          msg.innerHTML = `<span style='color:#00ff88; font-weight:700;'>✓ ${data.message}</span>`;
+          document.getElementById('latency-telemetry').innerText = `LATENCY: ${data.latency_ms || 1.2} MS`;
+          document.getElementById('stream-status-pill').innerText = "STREAM ONLINE";
+          document.getElementById('stream-status-pill').className = "status-pill live";
+          if (typeof playSfx === 'function') playSfx('success');
+        } else {
+          msg.innerHTML = `<span style='color:#ffb700;'>⚠️ Endpoint offline. Using Autonomous Biometric Sensor Fallback.</span>`;
+          document.getElementById('latency-telemetry').innerText = `FALLBACK ACTIVE`;
+        }
+      } catch (err) {
+        msg.innerHTML = `<span style='color:#ff3366;'>Ping error: ${err.message}</span>`;
+      }
+    }
+
+    async function refreshLiveView() {
+      const url = document.getElementById('camera-url-input').value;
+      const target = document.getElementById('target-name-input').value || 'Chiru';
+      const img = document.getElementById('live-stream-img');
+      img.src = `/api/ipcamera/stream_frame?url=${encodeURIComponent(url)}&name=${encodeURIComponent(target)}&t=${Date.now()}`;
+      if (typeof playSfx === 'function') playSfx('chirp');
+    }
+
+    async function trigger100Burst() {
+      const name = document.getElementById('target-name-input').value.trim();
+      const url = document.getElementById('camera-url-input').value.trim();
+      const btn = document.getElementById('btn-collect-100');
+      const msg = document.getElementById('collect-status-msg');
+
+      if (!name) {
+        alert("Please enter a target personnel name");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "⏳ CAPTURING 100 SAMPLES...";
+      msg.innerHTML = "<span style='color:#00f3ff;'>Executing Haar cascade localization and 100x100 histogram equalization...</span>";
+
+      try {
+        if (typeof playSfx === 'function') playSfx('scan');
+        const res = await fetch('/api/ipcamera/collect_100', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, url })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          msg.innerHTML = `<span style='color:#00ff88; font-weight:700;'>✓ ${data.message}</span>`;
+          if (typeof playSfx === 'function') playSfx('success');
+          alert(`✓ Acquired 100 facial samples for ${name}!\nDataset consolidated into project_face_detect/data/images.p and labels.p.`);
+        } else {
+          msg.innerHTML = `<span style='color:#ff3366;'>Failed: ${data.error}</span>`;
+          if (typeof playSfx === 'function') playSfx('error');
+        }
+      } catch (err) {
+        msg.innerHTML = `<span style='color:#ff3366;'>Execution error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "⚡ CAPTURE 100 SAMPLES & CONSOLIDATE";
+      }
+    }
+  </script>
+</body>
+</html>

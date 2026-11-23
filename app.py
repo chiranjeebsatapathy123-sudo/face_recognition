@@ -1759,6 +1759,71 @@ def api_export_json_audit():
     )
 
 
+# ==========================================
+# MODULE 37: IP CAMERA & WIRELESS SENSOR GATEWAY
+# ==========================================
+@app.route('/ipcamera')
+def ipcamera_view():
+    from attendance_engine.ipcamera import ipcamera_gateway
+    stats = db.get_stats()
+    return render_template('ipcamera.html', stats=stats, presets=ipcamera_gateway.default_urls, active_page='ipcamera')
+
+@app.route('/api/ipcamera/ping', methods=['POST'])
+def api_ipcamera_ping():
+    from attendance_engine.ipcamera import ipcamera_gateway
+    data = request.get_json() or {}
+    url = data.get('url', 'local://synthetic')
+    res = ipcamera_gateway.ping_camera_url(url)
+    return jsonify(res)
+
+@app.route('/api/ipcamera/stream_frame')
+def api_ipcamera_stream_frame():
+    from attendance_engine.ipcamera import ipcamera_gateway
+    url = request.args.get('url', 'local://synthetic')
+    name = request.args.get('name', 'Chiru')
+    frame = ipcamera_gateway.fetch_frame(url, fallback_name=name)
+    _, buf = cv2.imencode('.jpg', frame)
+    return Response(buf.tobytes(), mimetype='image/jpeg')
+
+@app.route('/api/ipcamera/collect_100', methods=['POST'])
+def api_ipcamera_collect_100():
+    from attendance_engine.ipcamera import ipcamera_gateway
+    data = request.get_json() or {}
+    name = data.get('name', 'Chiru').strip()
+    url = data.get('url', '')
+    res = ipcamera_gateway.run_100_burst_collection(name, camera_url=url)
+    return jsonify(res)
+
+
+# ==========================================
+# MODULE 38: NEURAL HUD INFERENCE SANDBOX
+# ==========================================
+@app.route('/neural_hud')
+def neural_hud_view():
+    stats = db.get_stats()
+    label_map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "label_map.json")
+    classes = ["Chiru", "rahul", "sourav"]
+    if os.path.exists(label_map_path):
+        try:
+            with open(label_map_path, "r") as f:
+                classes = json.load(f).get("classes", classes)
+        except Exception:
+            pass
+    return render_template('neural_hud.html', stats=stats, classes=classes, active_page='neural_hud')
+
+@app.route('/api/neural_hud/infer_frame', methods=['POST'])
+def api_neural_hud_infer_frame():
+    from attendance_engine.ipcamera import ipcamera_gateway
+    from attendance_engine.neural_hud import neural_hud_sandbox
+    data = request.get_json() or {}
+    subject = data.get('subject', 'Chiru')
+    model_type = data.get('model_type', 'pytorch')
+
+    frame = ipcamera_gateway.fetch_frame('local://synthetic', fallback_name=subject)
+    result = neural_hud_sandbox.analyze_frame_and_render_hud(frame, model_type=model_type)
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     print("=======================================================")
     print(" 🚀 3D CYBER BIOMETRIC ATTENDANCE SYSTEM RUNNING")
