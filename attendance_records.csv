@@ -1,16 +1,171 @@
-user_name,date,time,confidence,status,timestamp
-Chiru,2026-11-20,18:12:25,0.99,PRESENT,2026-11-20T18:12:25.166623
-Chiru,2026-11-20,18:18:20,0.99,PRESENT,2026-11-20T18:18:20.594252
-Chiru,Employee,CHECK_OUT,2026-11-20,19:42:12,1,0.734,PRESENT,2026-11-20T19:42:12.662280
-Chiru,Employee,CHECK_IN,2026-11-20,20:21:27,1,0.705,PRESENT,/static/punches/punch_Chiru_1795186287.jpg,2026-11-20T20:21:27.961268
-rahul,Employee,CHECK_IN,2026-11-20,20:23:19,1,0.739,PRESENT,/static/punches/punch_rahul_1795186399.jpg,2026-11-20T20:23:19.101764
-sourav,Employee,CHECK_IN,2026-11-20,20:23:20,1,0.751,PRESENT,/static/punches/punch_sourav_1795186400.jpg,2026-11-20T20:23:20.398333
-Chiru,Employee,CHECK_OUT,2026-11-20,20:27:14,1,0.723,PRESENT,/static/punches/punch_Chiru_1795186634.jpg,2026-11-20T20:27:14.944436
-Priya Sharma,Employee,CHECK_IN,2026-11-20,20:43:32,1,0.97,PRESENT,/static/punches/punch_PriyaSharma_1795187612.jpg,2026-11-20T20:43:32.418950
-Chiru,Employee,CHECK_IN,2026-11-20,20:49:33,1,0.701,PRESENT,/static/punches/punch_Chiru_1795187973.jpg,2026-11-20T20:49:33.987664
-Chiru,Employee,CHECK_OUT,2026-11-20,21:22:28,1,0.99,PRESENT,,2026-11-20T21:22:28.478675
-Priya Sharma,Employee,CHECK_OUT,2026-11-20,21:22:28,1,0.97,PRESENT,,2026-11-20T21:22:28.507946
-Aarav Mehta,Student,CHECK_IN,2026-11-20,21:22:28,1,0.95,PRESENT,,2026-11-20T21:22:28.529961
-rahul,Employee,CHECK_OUT,2026-11-20,21:23:22,1,0.708,PRESENT,/static/punches/punch_rahul_1795190002.jpg,2026-11-20T21:23:22.916982
-Chiru,Employee,CHECK_IN,2026-11-20,21:58:32,1,0.744,PRESENT,/static/punches/punch_Chiru_1795192112.jpg,2026-11-20T21:58:32.751900
-Chiru,Employee,CHECK_OUT,2026-11-20,22:06:21,1,0.98,PRESENT,,2026-11-20T22:06:21.502790
+user_name,user_type,punch_type,date,time,is_late,confidence,status,snapshot_url,timestamp
+Chiru,Employee,CHECK_IN,2026-11-17,09:25:22,0,0.97,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-17T09:25:22.081000
+Chiru,Employee,CHECK_OUT,2026-11-17,17:23:36,0,0.97,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-17T17:23:36.081000
+rahul,Employee,CHECK_IN,2026-11-17,09:25:25,0,0.97,PRESENT,/static/punches/profile_rahul.jpg,2026-11-17T09:25:25.025000
+rahul,Employee,CHECK_OUT,2026-11-17,18:20:57,0,0.95,PRESENT,/static/punches/profile_rahul.jpg,2026-11-17T18:20:57.025000
+sourav,Employee,CHECK_IN,2026-11-17,09:03:31,0,0.96,PRESENT,/static/punches/profile_sourav.jpg,2026-11-17T09:03:31.031000
+sourav,Employee,CHECK_OUT,2026-11-17,18:38:40,0,0.95,PRESENT,/static/punches/profile_sourav.jpg,2026-11-17T18:38:40.031000
+Priya Sharma,Employee,CHECK_IN,2026-11-17,09:27:24,0,0.99,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-17T09:27:24.083000
+Priya Sharma,Employee,CHECK_OUT,2026-11-17,19:29:50,0,0.99,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-17T19:29:50.083000
+David Chen,Employee,CHECK_IN,2026-11-17,09:27:55,0,0.99,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-17T09:27:55.055000
+David Chen,Employee,CHECK_OUT,2026-11-17,18:00:31,0,0.95,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-17T18:00:31.055000
+Ananya Patel,Employee,CHECK_IN,2026-11-17,09:07:35,0,0.93,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-17T09:07:35.035000
+Ananya Patel,Employee,CHECK_OUT,2026-11-17,19:50:09,0,0.99,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-17T19:50:09.035000
+Michael Ross,Employee,CHECK_IN,2026-11-17,08:37:50,0,0.94,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-17T08:37:50.050000
+Michael Ross,Employee,CHECK_OUT,2026-11-17,19:40:55,0,0.96,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-17T19:40:55.050000
+Aarav Mehta,Student,CHECK_IN,2026-11-17,08:51:40,0,0.98,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-17T08:51:40.040000
+Aarav Mehta,Student,CHECK_OUT,2026-11-17,18:10:44,0,0.98,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-17T18:10:44.040000
+Sneha Rao,Student,CHECK_IN,2026-11-17,09:45:14,1,0.93,LATE_ARRIVAL,/static/punches/profile_SnehaRao.jpg,2026-11-17T09:45:14.014000
+Sneha Rao,Student,CHECK_OUT,2026-11-17,19:42:39,0,0.96,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-17T19:42:39.014000
+Rohan Gupta,Student,CHECK_IN,2026-11-17,08:55:44,0,0.95,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-17T08:55:44.044000
+Rohan Gupta,Student,CHECK_OUT,2026-11-17,19:22:13,0,0.96,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-17T19:22:13.044000
+Emily Watson,Student,CHECK_IN,2026-11-17,09:15:12,0,0.94,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-17T09:15:12.071000
+Emily Watson,Student,CHECK_OUT,2026-11-17,19:48:25,0,0.99,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-17T19:48:25.071000
+Vikram Singh,Student,CHECK_IN,2026-11-17,08:53:07,0,0.96,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-17T08:53:07.066000
+Vikram Singh,Student,CHECK_OUT,2026-11-17,17:33:49,0,0.94,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-17T17:33:49.066000
+Natasha Roy,Student,CHECK_IN,2026-11-17,09:23:20,0,0.95,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-17T09:23:20.079000
+Natasha Roy,Student,CHECK_OUT,2026-11-17,18:17:22,0,0.95,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-17T18:17:22.079000
+Kevin Vance,Student,CHECK_IN,2026-11-17,08:39:17,0,0.99,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-17T08:39:17.076000
+Kevin Vance,Student,CHECK_OUT,2026-11-17,18:08:01,0,0.98,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-17T18:08:01.076000
+Alex Rivera,Employee,CHECK_IN,2026-11-17,09:13:10,0,0.99,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-17T09:13:10.069000
+Alex Rivera,Employee,CHECK_OUT,2026-11-17,17:42:11,0,0.97,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-17T17:42:11.069000
+Chiru,Employee,CHECK_IN,2026-11-18,09:13:38,0,0.99,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-18T09:13:38.097000
+Chiru,Employee,CHECK_OUT,2026-11-18,18:16:30,0,0.95,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-18T18:16:30.097000
+rahul,Employee,CHECK_IN,2026-11-18,08:43:56,0,0.93,PRESENT,/static/punches/profile_rahul.jpg,2026-11-18T08:43:56.056000
+rahul,Employee,CHECK_OUT,2026-11-18,19:03:38,0,0.96,PRESENT,/static/punches/profile_rahul.jpg,2026-11-18T19:03:38.056000
+sourav,Employee,CHECK_IN,2026-11-18,09:25:25,0,0.97,PRESENT,/static/punches/profile_sourav.jpg,2026-11-18T09:25:25.025000
+sourav,Employee,CHECK_OUT,2026-11-18,18:20:57,0,0.95,PRESENT,/static/punches/profile_sourav.jpg,2026-11-18T18:20:57.025000
+Priya Sharma,Employee,CHECK_IN,2026-11-18,09:45:14,1,0.93,LATE_ARRIVAL,/static/punches/profile_PriyaSharma.jpg,2026-11-18T09:45:14.014000
+Priya Sharma,Employee,CHECK_OUT,2026-11-18,19:42:39,0,0.96,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-18T19:42:39.014000
+David Chen,Employee,CHECK_IN,2026-11-18,08:51:40,0,0.98,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-18T08:51:40.040000
+David Chen,Employee,CHECK_OUT,2026-11-18,18:10:44,0,0.98,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-18T18:10:44.040000
+Ananya Patel,Employee,CHECK_IN,2026-11-18,09:13:38,0,0.99,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-18T09:13:38.097000
+Ananya Patel,Employee,CHECK_OUT,2026-11-18,18:16:30,0,0.95,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-18T18:16:30.097000
+Michael Ross,Employee,CHECK_IN,2026-11-18,08:37:50,0,0.94,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-18T08:37:50.050000
+Michael Ross,Employee,CHECK_OUT,2026-11-18,19:40:55,0,0.96,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-18T19:40:55.050000
+Aarav Mehta,Student,CHECK_IN,2026-11-18,09:31:00,1,0.93,LATE_ARRIVAL,/static/punches/profile_AaravMehta.jpg,2026-11-18T09:31:00.000000
+Aarav Mehta,Student,CHECK_OUT,2026-11-18,17:00:00,0,0.94,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-18T17:00:00.000000
+Sneha Rao,Student,CHECK_IN,2026-11-18,09:17:45,0,0.96,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-18T09:17:45.045000
+Sneha Rao,Student,CHECK_OUT,2026-11-18,17:25:20,0,0.97,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-18T17:25:20.045000
+Rohan Gupta,Student,CHECK_IN,2026-11-18,09:13:38,0,0.99,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-18T09:13:38.097000
+Rohan Gupta,Student,CHECK_OUT,2026-11-18,18:16:30,0,0.95,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-18T18:16:30.097000
+Emily Watson,Student,CHECK_IN,2026-11-18,09:47:16,1,0.95,LATE_ARRIVAL,/static/punches/profile_EmilyWatson.jpg,2026-11-18T09:47:16.016000
+Emily Watson,Student,CHECK_OUT,2026-11-18,18:48:53,0,0.98,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-18T18:48:53.016000
+Vikram Singh,Student,CHECK_IN,2026-11-18,09:13:10,0,0.99,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-18T09:13:10.069000
+Vikram Singh,Student,CHECK_OUT,2026-11-18,17:42:11,0,0.97,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-18T17:42:11.069000
+Natasha Roy,Student,CHECK_IN,2026-11-18,09:23:20,0,0.95,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-18T09:23:20.079000
+Natasha Roy,Student,CHECK_OUT,2026-11-18,18:17:22,0,0.95,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-18T18:17:22.079000
+Kevin Vance,Student,CHECK_IN,2026-11-18,08:57:46,0,0.97,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-18T08:57:46.046000
+Kevin Vance,Student,CHECK_OUT,2026-11-18,18:28:27,0,0.98,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-18T18:28:27.046000
+Alex Rivera,Employee,CHECK_IN,2026-11-18,09:50:19,1,0.98,LATE_ARRIVAL,/static/punches/profile_AlexRivera.jpg,2026-11-18T09:50:19.019000
+Alex Rivera,Employee,CHECK_OUT,2026-11-18,18:02:15,0,0.95,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-18T18:02:15.019000
+Chiru,Employee,CHECK_IN,2026-11-19,09:49:18,1,0.97,LATE_ARRIVAL,/static/punches/profile_Chiru.jpg,2026-11-19T09:49:18.018000
+Chiru,Employee,CHECK_OUT,2026-11-19,17:54:08,0,0.94,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-19T17:54:08.018000
+rahul,Employee,CHECK_IN,2026-11-19,09:46:15,1,0.94,LATE_ARRIVAL,/static/punches/profile_rahul.jpg,2026-11-19T09:46:15.015000
+rahul,Employee,CHECK_OUT,2026-11-19,17:45:46,0,0.97,PRESENT,/static/punches/profile_rahul.jpg,2026-11-19T17:45:46.015000
+sourav,Employee,CHECK_IN,2026-11-19,09:41:10,1,0.96,LATE_ARRIVAL,/static/punches/profile_sourav.jpg,2026-11-19T09:41:10.010000
+sourav,Employee,CHECK_OUT,2026-11-19,18:30:11,0,0.98,PRESENT,/static/punches/profile_sourav.jpg,2026-11-19T18:30:11.010000
+Priya Sharma,Employee,CHECK_IN,2026-11-19,08:37:15,0,0.97,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-19T08:37:15.074000
+Priya Sharma,Employee,CHECK_OUT,2026-11-19,19:02:46,0,0.96,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-19T19:02:46.074000
+David Chen,Employee,CHECK_IN,2026-11-19,08:57:11,0,0.93,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-19T08:57:11.070000
+David Chen,Employee,CHECK_OUT,2026-11-19,18:45:18,0,0.98,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-19T18:45:18.070000
+Ananya Patel,Employee,CHECK_IN,2026-11-19,09:11:36,0,0.97,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-19T09:11:36.095000
+Ananya Patel,Employee,CHECK_OUT,2026-11-19,19:10:16,0,0.99,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-19T19:10:16.095000
+Michael Ross,Employee,CHECK_IN,2026-11-19,09:15:43,0,0.94,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-19T09:15:43.043000
+Michael Ross,Employee,CHECK_OUT,2026-11-19,18:19:06,0,0.95,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-19T18:19:06.043000
+Aarav Mehta,Student,CHECK_IN,2026-11-19,09:19:47,0,0.98,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-19T09:19:47.047000
+Aarav Mehta,Student,CHECK_OUT,2026-11-19,19:31:34,0,0.99,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-19T19:31:34.047000
+Sneha Rao,Student,CHECK_IN,2026-11-19,09:21:18,0,0.93,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-19T09:21:18.077000
+Sneha Rao,Student,CHECK_OUT,2026-11-19,19:11:08,0,0.99,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-19T19:11:08.077000
+Rohan Gupta,Student,CHECK_IN,2026-11-19,08:57:35,0,0.96,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-19T08:57:35.094000
+Rohan Gupta,Student,CHECK_OUT,2026-11-19,18:07:09,0,0.98,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-19T18:07:09.094000
+Emily Watson,Student,CHECK_IN,2026-11-19,09:07:04,0,0.93,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-19T09:07:04.063000
+Emily Watson,Student,CHECK_OUT,2026-11-19,17:24:28,0,0.97,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-19T17:24:28.063000
+Vikram Singh,Student,CHECK_IN,2026-11-19,09:50:19,1,0.98,LATE_ARRIVAL,/static/punches/profile_VikramSingh.jpg,2026-11-19T09:50:19.019000
+Vikram Singh,Student,CHECK_OUT,2026-11-19,18:02:15,0,0.95,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-19T18:02:15.019000
+Natasha Roy,Student,CHECK_IN,2026-11-19,09:27:24,0,0.99,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-19T09:27:24.083000
+Natasha Roy,Student,CHECK_OUT,2026-11-19,19:29:50,0,0.99,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-19T19:29:50.083000
+Kevin Vance,Student,CHECK_IN,2026-11-19,09:15:40,0,0.94,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-19T09:15:40.099000
+Kevin Vance,Student,CHECK_OUT,2026-11-19,17:22:44,0,0.97,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-19T17:22:44.099000
+Alex Rivera,Employee,CHECK_IN,2026-11-19,09:25:53,0,0.97,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-19T09:25:53.053000
+Alex Rivera,Employee,CHECK_OUT,2026-11-19,19:49:17,0,0.99,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-19T19:49:17.053000
+Chiru,Employee,CHECK_IN,2026-11-20,08:47:25,0,0.93,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-20T08:47:25.084000
+Chiru,Employee,CHECK_OUT,2026-11-20,17:32:57,0,0.94,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-20T17:32:57.084000
+rahul,Employee,CHECK_IN,2026-11-20,09:38:07,1,0.93,LATE_ARRIVAL,/static/punches/profile_rahul.jpg,2026-11-20T09:38:07.007000
+rahul,Employee,CHECK_OUT,2026-11-20,18:21:49,0,0.95,PRESENT,/static/punches/profile_rahul.jpg,2026-11-20T18:21:49.007000
+sourav,Employee,CHECK_IN,2026-11-20,09:51:20,1,0.99,LATE_ARRIVAL,/static/punches/profile_sourav.jpg,2026-11-20T09:51:20.020000
+sourav,Employee,CHECK_OUT,2026-11-20,19:05:22,0,0.96,PRESENT,/static/punches/profile_sourav.jpg,2026-11-20T19:05:22.020000
+Priya Sharma,Employee,CHECK_IN,2026-11-20,09:23:20,0,0.95,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-20T09:23:20.079000
+Priya Sharma,Employee,CHECK_OUT,2026-11-20,18:17:22,0,0.95,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-20T18:17:22.079000
+David Chen,Employee,CHECK_IN,2026-11-20,09:09:37,0,0.95,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-20T09:09:37.037000
+David Chen,Employee,CHECK_OUT,2026-11-20,18:01:23,0,0.95,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-20T18:01:23.037000
+Ananya Patel,Employee,CHECK_IN,2026-11-20,09:52:21,1,0.93,LATE_ARRIVAL,/static/punches/profile_AnanyaPatel.jpg,2026-11-20T09:52:21.021000
+Ananya Patel,Employee,CHECK_OUT,2026-11-20,17:08:29,0,0.97,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-20T17:08:29.021000
+Michael Ross,Employee,CHECK_IN,2026-11-20,08:53:42,0,0.93,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-20T08:53:42.042000
+Michael Ross,Employee,CHECK_OUT,2026-11-20,17:16:58,0,0.94,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-20T17:16:58.042000
+Aarav Mehta,Student,CHECK_IN,2026-11-20,08:53:07,0,0.96,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-20T08:53:07.066000
+Aarav Mehta,Student,CHECK_OUT,2026-11-20,17:33:49,0,0.94,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-20T17:33:49.066000
+Sneha Rao,Student,CHECK_IN,2026-11-20,09:31:00,1,0.93,LATE_ARRIVAL,/static/punches/profile_SnehaRao.jpg,2026-11-20T09:31:00.000000
+Sneha Rao,Student,CHECK_OUT,2026-11-20,17:00:00,0,0.94,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-20T17:00:00.000000
+Rohan Gupta,Student,CHECK_IN,2026-11-20,09:46:15,1,0.94,LATE_ARRIVAL,/static/punches/profile_RohanGupta.jpg,2026-11-20T09:46:15.015000
+Rohan Gupta,Student,CHECK_OUT,2026-11-20,17:45:46,0,0.97,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-20T17:45:46.015000
+Emily Watson,Student,CHECK_IN,2026-11-20,09:50:19,1,0.98,LATE_ARRIVAL,/static/punches/profile_EmilyWatson.jpg,2026-11-20T09:50:19.019000
+Emily Watson,Student,CHECK_OUT,2026-11-20,18:02:15,0,0.95,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-20T18:02:15.019000
+Vikram Singh,Student,CHECK_IN,2026-11-20,08:53:42,0,0.93,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-20T08:53:42.042000
+Vikram Singh,Student,CHECK_OUT,2026-11-20,17:16:58,0,0.94,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-20T17:16:58.042000
+Natasha Roy,Student,CHECK_IN,2026-11-20,08:37:26,0,0.98,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-20T08:37:26.026000
+Natasha Roy,Student,CHECK_OUT,2026-11-20,19:23:05,0,0.96,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-20T19:23:05.026000
+Kevin Vance,Student,CHECK_IN,2026-11-20,08:49:27,0,0.95,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-20T08:49:27.086000
+Kevin Vance,Student,CHECK_OUT,2026-11-20,19:38:12,0,0.96,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-20T19:38:12.086000
+Alex Rivera,Employee,CHECK_IN,2026-11-20,09:37:06,1,0.99,LATE_ARRIVAL,/static/punches/profile_AlexRivera.jpg,2026-11-20T09:37:06.006000
+Alex Rivera,Employee,CHECK_OUT,2026-11-20,17:18:42,0,0.94,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-20T17:18:42.006000
+sourav,Employee,CHECK_IN,2026-11-21,08:53:31,0,0.99,PRESENT,/static/punches/profile_sourav.jpg,2026-11-21T08:53:31.090000
+sourav,Employee,CHECK_OUT,2026-11-21,17:50:40,0,0.94,PRESENT,/static/punches/profile_sourav.jpg,2026-11-21T17:50:40.090000
+Ananya Patel,Employee,CHECK_IN,2026-11-21,09:19:47,0,0.98,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-21T09:19:47.047000
+Ananya Patel,Employee,CHECK_OUT,2026-11-21,19:31:34,0,0.99,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-21T19:31:34.047000
+Sneha Rao,Student,CHECK_IN,2026-11-21,09:25:53,0,0.97,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-21T09:25:53.053000
+Sneha Rao,Student,CHECK_OUT,2026-11-21,19:49:17,0,0.99,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-21T19:49:17.053000
+Vikram Singh,Student,CHECK_IN,2026-11-21,09:05:30,0,0.98,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-21T09:05:30.089000
+Vikram Singh,Student,CHECK_OUT,2026-11-21,19:47:33,0,0.99,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-21T19:47:33.089000
+Alex Rivera,Employee,CHECK_IN,2026-11-21,08:35:13,0,0.95,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-21T08:35:13.072000
+Alex Rivera,Employee,CHECK_OUT,2026-11-21,17:51:32,0,0.94,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-21T17:51:32.072000
+sourav,Employee,CHECK_IN,2026-11-22,09:48:17,1,0.96,LATE_ARRIVAL,/static/punches/profile_sourav.jpg,2026-11-22T09:48:17.017000
+sourav,Employee,CHECK_OUT,2026-11-22,19:51:01,0,0.99,PRESENT,/static/punches/profile_sourav.jpg,2026-11-22T19:51:01.017000
+Ananya Patel,Employee,CHECK_IN,2026-11-22,09:23:51,0,0.95,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-22T09:23:51.051000
+Ananya Patel,Employee,CHECK_OUT,2026-11-22,17:43:03,0,0.97,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-22T17:43:03.051000
+Sneha Rao,Student,CHECK_IN,2026-11-22,09:05:30,0,0.98,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-22T09:05:30.089000
+Sneha Rao,Student,CHECK_OUT,2026-11-22,19:47:33,0,0.99,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-22T19:47:33.089000
+Vikram Singh,Student,CHECK_IN,2026-11-22,09:21:18,0,0.93,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-22T09:21:18.077000
+Vikram Singh,Student,CHECK_OUT,2026-11-22,19:11:08,0,0.99,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-22T19:11:08.077000
+Alex Rivera,Employee,CHECK_IN,2026-11-22,09:07:04,0,0.93,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-22T09:07:04.063000
+Alex Rivera,Employee,CHECK_OUT,2026-11-22,17:24:28,0,0.97,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-22T17:24:28.063000
+Chiru,Employee,CHECK_IN,2026-11-23,08:57:22,0,0.94,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-23T08:57:22.022000
+Chiru,Employee,CHECK_OUT,2026-11-23,18:11:36,0,0.98,PRESENT,/static/punches/profile_Chiru.jpg,2026-11-23T18:11:36.022000
+rahul,Employee,CHECK_IN,2026-11-23,08:43:32,0,0.97,PRESENT,/static/punches/profile_rahul.jpg,2026-11-23T08:43:32.032000
+rahul,Employee,CHECK_OUT,2026-11-23,19:41:47,0,0.96,PRESENT,/static/punches/profile_rahul.jpg,2026-11-23T19:41:47.032000
+sourav,Employee,CHECK_IN,2026-11-23,09:15:40,0,0.94,PRESENT,/static/punches/profile_sourav.jpg,2026-11-23T09:15:40.099000
+sourav,Employee,CHECK_OUT,2026-11-23,17:22:44,0,0.97,PRESENT,/static/punches/profile_sourav.jpg,2026-11-23T17:22:44.099000
+Priya Sharma,Employee,CHECK_IN,2026-11-23,09:25:53,0,0.97,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-23T09:25:53.053000
+Priya Sharma,Employee,CHECK_OUT,2026-11-23,19:49:17,0,0.99,PRESENT,/static/punches/profile_PriyaSharma.jpg,2026-11-23T19:49:17.053000
+David Chen,Employee,CHECK_IN,2026-11-23,08:45:34,0,0.99,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-23T08:45:34.034000
+David Chen,Employee,CHECK_OUT,2026-11-23,18:47:02,0,0.98,PRESENT,/static/punches/profile_DavidChen.jpg,2026-11-23T18:47:02.034000
+Ananya Patel,Employee,CHECK_IN,2026-11-23,09:40:09,1,0.95,LATE_ARRIVAL,/static/punches/profile_AnanyaPatel.jpg,2026-11-23T09:40:09.009000
+Ananya Patel,Employee,CHECK_OUT,2026-11-23,17:27:04,0,0.97,PRESENT,/static/punches/profile_AnanyaPatel.jpg,2026-11-23T17:27:04.009000
+Michael Ross,Employee,CHECK_IN,2026-11-23,08:37:15,0,0.97,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-23T08:37:15.074000
+Michael Ross,Employee,CHECK_OUT,2026-11-23,19:02:46,0,0.96,PRESENT,/static/punches/profile_MichaelRoss.jpg,2026-11-23T19:02:46.074000
+Aarav Mehta,Student,CHECK_IN,2026-11-23,09:42:11,1,0.97,LATE_ARRIVAL,/static/punches/profile_AaravMehta.jpg,2026-11-23T09:42:11.011000
+Aarav Mehta,Student,CHECK_OUT,2026-11-23,19:33:18,0,0.99,PRESENT,/static/punches/profile_AaravMehta.jpg,2026-11-23T19:33:18.011000
+Sneha Rao,Student,CHECK_IN,2026-11-23,08:35:13,0,0.95,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-23T08:35:13.072000
+Sneha Rao,Student,CHECK_OUT,2026-11-23,17:51:32,0,0.94,PRESENT,/static/punches/profile_SnehaRao.jpg,2026-11-23T17:51:32.072000
+Rohan Gupta,Student,CHECK_IN,2026-11-23,09:13:38,0,0.99,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-23T09:13:38.097000
+Rohan Gupta,Student,CHECK_OUT,2026-11-23,18:16:30,0,0.95,PRESENT,/static/punches/profile_RohanGupta.jpg,2026-11-23T18:16:30.097000
+Emily Watson,Student,CHECK_IN,2026-11-23,09:35:04,1,0.97,LATE_ARRIVAL,/static/punches/profile_EmilyWatson.jpg,2026-11-23T09:35:04.004000
+Emily Watson,Student,CHECK_OUT,2026-11-23,18:12:28,0,0.98,PRESENT,/static/punches/profile_EmilyWatson.jpg,2026-11-23T18:12:28.004000
+Vikram Singh,Student,CHECK_IN,2026-11-23,09:03:00,0,0.96,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-23T09:03:00.059000
+Vikram Singh,Student,CHECK_OUT,2026-11-23,19:12:00,0,0.99,PRESENT,/static/punches/profile_VikramSingh.jpg,2026-11-23T19:12:00.059000
+Natasha Roy,Student,CHECK_IN,2026-11-23,08:55:44,0,0.95,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-23T08:55:44.044000
+Natasha Roy,Student,CHECK_OUT,2026-11-23,19:22:13,0,0.96,PRESENT,/static/punches/profile_NatashaRoy.jpg,2026-11-23T19:22:13.044000
+Kevin Vance,Student,CHECK_IN,2026-11-23,09:09:34,0,0.95,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-23T09:09:34.093000
+Kevin Vance,Student,CHECK_OUT,2026-11-23,17:04:02,0,0.97,PRESENT,/static/punches/profile_KevinVance.jpg,2026-11-23T17:04:02.093000
+Alex Rivera,Employee,CHECK_IN,2026-11-23,08:49:38,0,0.96,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-23T08:49:38.038000
+Alex Rivera,Employee,CHECK_OUT,2026-11-23,19:04:30,0,0.96,PRESENT,/static/punches/profile_AlexRivera.jpg,2026-11-23T19:04:30.038000

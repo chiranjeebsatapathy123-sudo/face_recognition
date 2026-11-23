@@ -1502,14 +1502,16 @@ def api_vault_download(filename):
 @app.route('/adversarial')
 def adversarial_view():
     stats = db.get_stats()
-    sample = liveness_lab.simulate_adversarial_attack(attack_type="DEEPFAKE_WARP")
-    return render_template('adversarial.html', stats=stats, sample=sample)
+    users = db.get_users()
+    sample = liveness_lab.simulate_adversarial_attack(attack_type="DEEPFAKE_WARP", target_user="Chiru")
+    return render_template('adversarial.html', stats=stats, sample=sample, users=users)
 
 @app.route('/api/adversarial/simulate', methods=['POST'])
 def api_adversarial_simulate():
     data = request.get_json() or {}
     attack_type = data.get('attack_type', 'DEEPFAKE_WARP')
-    res = liveness_lab.simulate_adversarial_attack(attack_type=attack_type)
+    target_user = data.get('target_user', 'Chiru')
+    res = liveness_lab.simulate_adversarial_attack(attack_type=attack_type, target_user=target_user)
     return jsonify(res)
 
 

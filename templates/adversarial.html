@@ -175,6 +175,13 @@
             <span id="threat-pill" style="font-family:var(--font-tech); font-size:0.72rem; color:#ff3366;">{{ sample.attack_spec.threat_level }} THREAT</span>
           </div>
 
+          <label style="font-family:var(--font-tech); font-size:0.74rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:6px; display:block;">TARGET REAL IDENTITY</label>
+          <select id="target-user-select" class="cyber-select" style="border-color:rgba(0, 243, 255, 0.4); margin-bottom:12px;">
+            {% for u in users %}
+            <option value="{{ u.name }}" {{ 'selected' if u.name == 'Chiru' else '' }}>{{ u.name }} ({{ u.department }})</option>
+            {% endfor %}
+          </select>
+
           <label style="font-family:var(--font-tech); font-size:0.74rem; color:var(--text-muted); letter-spacing:1px; margin-bottom:6px; display:block;">SELECT ATTACK TYPE</label>
           <select id="attack-type-select" class="cyber-select" onchange="updateAttackDescription()" style="border-color:rgba(255, 51, 102, 0.4);">
             <option value="DEEPFAKE_WARP" selected>Deepfake Face Swap & GAN Warp</option>
@@ -284,6 +291,7 @@
 
     async function executeAdversarialAttack() {
       const type = document.getElementById('attack-type-select').value;
+      const targetUser = document.getElementById('target-user-select') ? document.getElementById('target-user-select').value : 'Chiru';
       const btn = document.getElementById('launch-attack-btn');
       const consoleBox = document.getElementById('arena-console');
 
@@ -291,14 +299,14 @@
       btn.innerHTML = '<span>⏳ SIMULATING ADVERSARIAL STRESS-TEST...</span>';
       if (window.playCyberAudio) window.playCyberAudio('radar');
 
-      consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [ATTACK LAUNCHED] Injecting ${type} perturbation vector into biometric pipeline...</span>`;
+      consoleBox.innerHTML += `<br><span style="color:#ff3366;">>>> [ATTACK LAUNCHED] Injecting ${type} perturbation vector against ${targetUser}...</span>`;
       consoleBox.scrollTop = consoleBox.scrollHeight;
 
       try {
         const resp = await fetch('/api/adversarial/simulate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ attack_type: type })
+          body: JSON.stringify({ attack_type: type, target_user: targetUser })
         });
         const res = await resp.json();
 

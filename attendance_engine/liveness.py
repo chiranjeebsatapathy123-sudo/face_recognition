@@ -207,9 +207,9 @@ class LivenessDetector:
     # ==========================================
     # MODULE 31: ADVERSARIAL ATTACK ARENA & DEFENSE
     # ==========================================
-    def simulate_adversarial_attack(self, face_bgr=None, attack_type="DEEPFAKE_WARP"):
+    def simulate_adversarial_attack(self, face_bgr=None, attack_type="DEEPFAKE_WARP", target_user="Chiru"):
         """
-        Simulates advanced presentation and adversarial AI attacks:
+        Simulates advanced presentation and adversarial AI attacks on real faces:
         - DEEPFAKE_WARP: Non-linear facial warping and synthetic border blending
         - PHOTO_PRINT_2D: Paper halftone grain, specular highlights absence & desaturation
         - OLED_SCREEN_REPLAY: High-frequency Moiré grid lines & sub-pixel refresh banding
@@ -217,16 +217,30 @@ class LivenessDetector:
         - FGSM_ADVERSARIAL_NOISE: Fast Gradient Sign Method epsilon-bounded latent noise
         """
         import base64
+        import os
         h, w = (240, 240)
         if face_bgr is None or (hasattr(face_bgr, 'size') and face_bgr.size == 0):
-            face = np.full((h, w, 3), 32, dtype=np.uint8)
-            cv2.ellipse(face, (120, 120), (70, 95), 0, 0, 360, (180, 160, 140), -1)
-            cv2.circle(face, (95, 95), 12, (240, 240, 240), -1)
-            cv2.circle(face, (145, 95), 12, (240, 240, 240), -1)
-            cv2.circle(face, (95, 95), 6, (80, 50, 20), -1)
-            cv2.circle(face, (145, 95), 6, (80, 50, 20), -1)
-            cv2.ellipse(face, (120, 130), (8, 16), 0, 0, 360, (140, 110, 90), -1)
-            cv2.ellipse(face, (120, 165), (28, 10), 0, 0, 180, (60, 40, 140), 3)
+            clean_u = target_user.replace(" ", "")
+            images_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project_face_detect", "images")
+            punches_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "punches")
+            
+            candidates = [
+                os.path.join(images_dir, f"{clean_u}_0.jpg"),
+                os.path.join(images_dir, f"{target_user}_0.jpg"),
+                os.path.join(images_dir, "Chiru_0.jpg"),
+                os.path.join(punches_dir, f"profile_{clean_u}.jpg"),
+                os.path.join(punches_dir, "punch_Chiru_1795186287.jpg")
+            ]
+            loaded = None
+            for cand in candidates:
+                if os.path.exists(cand):
+                    loaded = cv2.imread(cand)
+                    if loaded is not None:
+                        break
+            if loaded is not None:
+                face = cv2.resize(loaded, (w, h))
+            else:
+                face = np.full((h, w, 3), 45, dtype=np.uint8)
         else:
             face = cv2.resize(face_bgr, (w, h))
 
